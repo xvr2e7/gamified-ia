@@ -2,6 +2,8 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
+using System.Linq;
 
 public class QuestionDisplayManager : MonoBehaviour
 {
@@ -17,9 +19,42 @@ public class QuestionDisplayManager : MonoBehaviour
     private Slider instantiatedSlider;
     private TextMeshProUGUI valueText;
 
+    private List<string> questionFiles = new List<string>();
+    private int currentQuestionIndex = 0;
+
     void Start()
     {
-        LoadAndDisplayQuestion("practice_1_data_8_GROUPED_BAR");
+        LoadQuestionFiles();
+        if (questionFiles.Count > 0)
+        {
+            LoadAndDisplayQuestion(questionFiles[0]);
+        }
+    }
+
+    void LoadQuestionFiles()
+    {
+        string fullPath = Path.Combine(Application.streamingAssetsPath, dataFolder);
+
+        if (!Directory.Exists(fullPath))
+        {
+            Debug.LogError($"Questions directory not found: {fullPath}");
+            return;
+        }
+
+        string[] files = Directory.GetFiles(fullPath, "*.json");
+        questionFiles = files.Select(f => Path.GetFileNameWithoutExtension(f)).ToList();
+        questionFiles.Sort();
+
+        Debug.Log($"Found {questionFiles.Count} question files");
+    }
+
+    public void LoadNextQuestion()
+    {
+        if (questionFiles.Count == 0) return;
+
+        currentQuestionIndex = (currentQuestionIndex + 1) % questionFiles.Count;
+        LoadAndDisplayQuestion(questionFiles[currentQuestionIndex]);
+        ResetSlider();
     }
 
     void LoadAndDisplayQuestion(string fileName)
@@ -46,28 +81,32 @@ public class QuestionDisplayManager : MonoBehaviour
         if (instantiatedSlider == null)
         {
             instantiatedSlider = Instantiate(sliderPrefab, optionsPanel);
-            // Find the Text child named "Value" in the prefab
             Transform valueTransform = instantiatedSlider.transform.Find("Value");
             if (valueTransform != null)
                 valueText = valueTransform.GetComponent<TextMeshProUGUI>();
             else
                 Debug.LogWarning("Value text child not found on slider prefab.");
 
-            // Add listener to update text in real time
             instantiatedSlider.onValueChanged.AddListener(UpdateValueText);
         }
 
         // Configure slider
         instantiatedSlider.minValue = 0;
         instantiatedSlider.maxValue = 100;
-        if (currentQuestionData.y_values != null && currentQuestionData.y_values.Length > 0)
-        {
-            instantiatedSlider.value = currentQuestionData.y_values[0];
-        }
 
-        // Update the text immediately
+        instantiatedSlider.value = 50; // start at middle to avoid anchoring
+
         UpdateValueText(instantiatedSlider.value);
         instantiatedSlider.gameObject.SetActive(true);
+    }
+
+    void ResetSlider()
+    {
+        if (instantiatedSlider != null)
+        {
+            instantiatedSlider.value = 50; // Reset to middle position
+            UpdateValueText(instantiatedSlider.value);
+        }
     }
 
     private void UpdateValueText(float val)

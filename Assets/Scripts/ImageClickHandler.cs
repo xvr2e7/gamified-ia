@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private ImageViewerController imageViewer;
+    private QuestionDisplayManager questionManager;
     private BoxCollider boxCollider;
     private bool isHovered = false;
 
@@ -38,29 +39,19 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
             imageViewer = FindObjectOfType<ImageViewerController>();
         }
 
-        // Set up collider for 3D interaction as backup
-        if (boxCollider != null)
-        {
-            // Make sure collider matches the RectTransform size
-            RectTransform rect = GetComponent<RectTransform>();
-            if (rect != null)
-            {
-                boxCollider.size = new Vector3(rect.rect.width, rect.rect.height, 1f);
-                boxCollider.center = Vector3.zero;
-            }
-        }
+        questionManager = FindObjectOfType<QuestionDisplayManager>();
     }
 
     // UI Event System callbacks for Vive pointer
     public void OnPointerClick(PointerEventData eventData)
     {
-        NextImage();
+        HandleClick();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         isHovered = true;
-        if (rawImage != null && hoverColor != null)
+        if (rawImage != null)
         {
             rawImage.color = hoverColor;
         }
@@ -73,12 +64,6 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
         {
             rawImage.color = normalColor;
         }
-    }
-
-    // 3D Collider-based interaction as fallback
-    void OnMouseDown()
-    {
-        NextImage();
     }
 
     void OnMouseEnter()
@@ -105,30 +90,26 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
         }
     }
 
-    private void NextImage()
+    private void HandleClick()
     {
+        // Advance image
         if (imageViewer != null)
         {
             imageViewer.NextImage();
         }
         else
         {
-            Debug.LogError("[ViveImageClickHandler] Cannot advance - ImageViewerController is null!");
-        }
-    }
-
-    // Keyboard shortcut for testing
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            NextImage();
+            Debug.LogError("[ImageClickHandler] Cannot advance - ImageViewerController is null!");
         }
 
-        // Debug ray visualization
-        if (isHovered && Time.frameCount % 30 == 0)
+        // Advance question and reset slider
+        if (questionManager != null)
         {
-            Debug.Log($"[ViveImageClickHandler] Currently hovered: {isHovered}");
+            questionManager.LoadNextQuestion();
+        }
+        else
+        {
+            Debug.LogError("[ImageClickHandler] Cannot advance question - QuestionDisplayManager is null!");
         }
     }
 }
