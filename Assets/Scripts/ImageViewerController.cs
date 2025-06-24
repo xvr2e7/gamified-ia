@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System.Linq;
+using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
 public class ImageViewerController : MonoBehaviour
 {
@@ -12,52 +14,202 @@ public class ImageViewerController : MonoBehaviour
     [SerializeField] private RawImage displayImage;
     [SerializeField] private TextMeshProUGUI imageCounter;
 
+    [Header("Panels")]
+    [SerializeField] private GameObject openingPanel;
+    [SerializeField] private GameObject endingPanel;
+    [SerializeField] private Button startButton;
+
+    [Header("External UI Elements")]
+    [SerializeField] private GameObject questionPanel;
+    [SerializeField] private GameObject sliderPanel;
+
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
 
     private List<Texture2D> loadedImages = new List<Texture2D>();
     private int currentImageIndex = 0;
+    private GameObject imageGameObject;
+    private GameObject counterGameObject;
+
+    void Awake()
+    {
+        Debug.Log("[ImageViewerController] AWAKE - Setting up button listener");
+
+        // Set up button listener in Awake to ensure it's early enough
+        if (startButton != null)
+        {
+            // Method 1: Using UnityAction
+            UnityAction buttonAction = () =>
+            {
+                Debug.Log("[ImageViewerController] Button clicked via UnityAction!");
+                StartStudy();
+            };
+            startButton.onClick.AddListener(buttonAction);
+
+            // Method 2: Also add via Inspector-friendly method
+            // This creates a persistent listener that shows in Inspector
+            if (startButton.onClick.GetPersistentEventCount() == 0)
+            {
+                Debug.Log("[ImageViewerController] Adding persistent listener");
+                // Note: This only works in Editor, but helps for debugging
+#if UNITY_EDITOR
+                UnityEditor.Events.UnityEventTools.AddPersistentListener(startButton.onClick, StartStudy);
+#endif
+            }
+
+            Debug.Log($"[ImageViewerController] Button listeners after Awake: {startButton.onClick.GetPersistentEventCount()}");
+        }
+    }
 
     void Start()
     {
-        Debug.Log("[ImageViewerController] Starting initialization");
+        Debug.Log("[ImageViewerController] ========== START INITIALIZATION ==========");
 
-        // Validate references
-        if (displayImage == null)
+        // Get references to the GameObjects we need to show/hide
+        if (displayImage != null)
         {
-            Debug.LogError("[ImageViewerController] DisplayImage reference is missing!");
-        }
-        if (imageCounter == null)
-        {
-            Debug.LogError("[ImageViewerController] ImageCounter reference is missing!");
+            imageGameObject = displayImage.gameObject;
+            Debug.Log($"[ImageViewerController] Image GameObject found: {imageGameObject.name}");
         }
 
+        if (imageCounter != null)
+        {
+            counterGameObject = imageCounter.gameObject;
+            Debug.Log($"[ImageViewerController] Counter GameObject found: {counterGameObject.name}");
+        }
+
+        // Find QuestionPanel and SliderPanel if not assigned
+        if (questionPanel == null)
+        {
+            GameObject foundPanel = GameObject.Find("QuestionPanel");
+            if (foundPanel != null)
+            {
+                questionPanel = foundPanel;
+                Debug.Log("[ImageViewerController] QuestionPanel found by name");
+            }
+        }
+
+        if (sliderPanel == null)
+        {
+            GameObject foundPanel = GameObject.Find("SliderPanel");
+            if (foundPanel != null)
+            {
+                sliderPanel = foundPanel;
+                Debug.Log("[ImageViewerController] SliderPanel found by name");
+            }
+        }
+
+        // Double-check button setup
+        if (startButton != null)
+        {
+            Debug.Log($"[ImageViewerController] Checking button in Start...");
+
+            // Add XR-specific check
+            var imageCanvas = GameObject.Find("ImageCanvas");
+            if (imageCanvas != null)
+            {
+                // Make sure we have TrackedDeviceGraphicRaycaster for XR
+                var trackedRaycaster = imageCanvas.GetComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>();
+                if (trackedRaycaster == null)
+                {
+                    Debug.LogWarning("[ImageViewerController] No TrackedDeviceGraphicRaycaster found! Adding one...");
+                    imageCanvas.AddComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>();
+                }
+            }
+
+            // Test the button directly
+            startButton.onClick.Invoke();
+            Debug.Log("[ImageViewerController] Tested button.onClick.Invoke() - if StartStudy was called, button is working");
+        }
+
+        // Initial visibility setup
+        SetupInitialVisibility();
+
+        // Load images
         LoadImagesFromFolder();
+
+        Debug.Log("[ImageViewerController] ========== END INITIALIZATION ==========");
+    }
+
+    void SetupInitialVisibility()
+    {
+        Debug.Log("[ImageViewerController] Setting up initial visibility...");
+
+        if (openingPanel != null) openingPanel.SetActive(true);
+        if (endingPanel != null) endingPanel.SetActive(false);
+        if (imageGameObject != null) imageGameObject.SetActive(false);
+        if (counterGameObject != null) counterGameObject.SetActive(false);
+        if (questionPanel != null) questionPanel.SetActive(false);
+        if (sliderPanel != null) sliderPanel.SetActive(false);
+    }
+
+    public void StartStudy()
+    {
+        Debug.Log("[ImageViewerController] !!!!! StartStudy() CALLED !!!!!");
+        Debug.Log($"[ImageViewerController] Loaded images count: {loadedImages.Count}");
+
+        if (openingPanel != null)
+        {
+            openingPanel.SetActive(false);
+            Debug.Log("[ImageViewerController] Opening panel HIDDEN");
+        }
+
+        if (imageGameObject != null)
+        {
+            imageGameObject.SetActive(true);
+            Debug.Log("[ImageViewerController] Image SHOWN");
+        }
+        if (counterGameObject != null)
+        {
+            counterGameObject.SetActive(true);
+            Debug.Log("[ImageViewerController] Counter SHOWN");
+        }
+        if (questionPanel != null)
+        {
+            questionPanel.SetActive(true);
+            Debug.Log("[ImageViewerController] Question panel SHOWN");
+        }
+        if (sliderPanel != null)
+        {
+            sliderPanel.SetActive(true);
+            Debug.Log("[ImageViewerController] Slider panel SHOWN");
+        }
+
         if (loadedImages.Count > 0)
         {
+            Debug.Log("[ImageViewerController] Displaying first image...");
             DisplayCurrentImage();
         }
-        else
+    }
+
+    void Update()
+    {
+        // Test with keyboard
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            Debug.LogWarning("No images found in the specified folder!");
+            Debug.Log("[ImageViewerController] SPACE key pressed - calling StartStudy");
+            StartStudy();
         }
+    }
+
+    // Alternative approach - Public method for button OnClick in Inspector
+    public void OnStartButtonClicked()
+    {
+        Debug.Log("[ImageViewerController] OnStartButtonClicked called from Inspector!");
+        StartStudy();
     }
 
     void LoadImagesFromFolder()
     {
-        // Build the full path to StreamingAssets
         string fullPath = Path.Combine(Application.streamingAssetsPath, imageFolderPath);
-
         Debug.Log($"[ImageViewerController] Looking for images in: {fullPath}");
 
-        // Check if directory exists
         if (!Directory.Exists(fullPath))
         {
             Debug.LogError($"[ImageViewerController] Directory not found: {fullPath}");
             return;
         }
 
-        // Get all image files from the folder
         string[] supportedExtensions = { "*.png", "*.jpg", "*.jpeg" };
         List<string> imagePaths = new List<string>();
 
@@ -67,12 +219,9 @@ public class ImageViewerController : MonoBehaviour
             imagePaths.AddRange(paths);
         }
 
-        // Sort the paths to ensure consistent ordering
         imagePaths.Sort();
-
         Debug.Log($"[ImageViewerController] Found {imagePaths.Count} image files");
 
-        // Load each image
         foreach (string path in imagePaths)
         {
             StartCoroutine(LoadImageCoroutine(path));
@@ -88,17 +237,6 @@ public class ImageViewerController : MonoBehaviour
         {
             texture.name = Path.GetFileNameWithoutExtension(path);
             loadedImages.Add(texture);
-            Debug.Log($"[ImageViewerController] Loaded image: {texture.name}");
-
-            // If this is the first image, display it immediately
-            if (loadedImages.Count == 1)
-            {
-                DisplayCurrentImage();
-            }
-        }
-        else
-        {
-            Debug.LogError($"[ImageViewerController] Failed to load image: {path}");
         }
 
         yield return null;
@@ -108,21 +246,16 @@ public class ImageViewerController : MonoBehaviour
     {
         if (loadedImages.Count == 0) return;
 
-        // Display the image
         displayImage.texture = loadedImages[currentImageIndex];
 
-        // Adjust the aspect ratio of the RawImage to match the texture
         if (displayImage.texture != null)
         {
             float aspectRatio = (float)displayImage.texture.width / displayImage.texture.height;
             RectTransform rectTransform = displayImage.GetComponent<RectTransform>();
-
-            // Maintain height and adjust width
             float currentHeight = rectTransform.sizeDelta.y;
             rectTransform.sizeDelta = new Vector2(currentHeight * aspectRatio, currentHeight);
         }
 
-        // Update the counter
         string fileName = loadedImages[currentImageIndex].name;
         imageCounter.text = $"{fileName} ({currentImageIndex + 1}/{loadedImages.Count})";
     }
@@ -131,17 +264,30 @@ public class ImageViewerController : MonoBehaviour
     {
         Debug.Log("[ImageViewerController] NextImage called");
 
-        if (loadedImages.Count == 0)
+        if (loadedImages.Count == 0) return;
+
+        currentImageIndex++;
+
+        if (currentImageIndex >= loadedImages.Count)
         {
-            Debug.LogWarning("[ImageViewerController] No images loaded!");
-            return;
+            EndStudy();
         }
+        else
+        {
+            DisplayCurrentImage();
+        }
+    }
 
-        int previousIndex = currentImageIndex;
-        currentImageIndex = (currentImageIndex + 1) % loadedImages.Count;
-        Debug.Log($"[ImageViewerController] Advanced from image {previousIndex} to {currentImageIndex}");
+    void EndStudy()
+    {
+        Debug.Log("[ImageViewerController] Ending study");
 
-        DisplayCurrentImage();
+        if (imageGameObject != null) imageGameObject.SetActive(false);
+        if (counterGameObject != null) counterGameObject.SetActive(false);
+        if (questionPanel != null) questionPanel.SetActive(false);
+        if (sliderPanel != null) sliderPanel.SetActive(false);
+
+        if (endingPanel != null) endingPanel.SetActive(true);
     }
 
     public void PreviousImage()
@@ -155,7 +301,6 @@ public class ImageViewerController : MonoBehaviour
         DisplayCurrentImage();
     }
 
-    // Clean up textures when the object is destroyed
     void OnDestroy()
     {
         foreach (var texture in loadedImages)
