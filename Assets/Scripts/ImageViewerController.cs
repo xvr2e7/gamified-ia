@@ -13,7 +13,7 @@ public class ImageViewerController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI imageCounter;
 
     [Header("Settings")]
-    [SerializeField] private string imageFolderPath = "Assets/Data/SampleImages";
+    [SerializeField] private string imageFolderPath = "Data/SampleImages";
 
     private List<Texture2D> loadedImages = new List<Texture2D>();
     private int currentImageIndex = 0;
@@ -45,34 +45,63 @@ public class ImageViewerController : MonoBehaviour
 
     void LoadImagesFromFolder()
     {
+        // Build the full path to StreamingAssets
+        string fullPath = Path.Combine(Application.streamingAssetsPath, imageFolderPath);
+
+        Debug.Log($"[ImageViewerController] Looking for images in: {fullPath}");
+
+        // Check if directory exists
+        if (!Directory.Exists(fullPath))
+        {
+            Debug.LogError($"[ImageViewerController] Directory not found: {fullPath}");
+            return;
+        }
+
         // Get all image files from the folder
         string[] supportedExtensions = { "*.png", "*.jpg", "*.jpeg" };
         List<string> imagePaths = new List<string>();
 
         foreach (string extension in supportedExtensions)
         {
-            string[] paths = Directory.GetFiles(imageFolderPath, extension);
+            string[] paths = Directory.GetFiles(fullPath, extension);
             imagePaths.AddRange(paths);
         }
 
         // Sort the paths to ensure consistent ordering
         imagePaths.Sort();
 
+        Debug.Log($"[ImageViewerController] Found {imagePaths.Count} image files");
+
         // Load each image
         foreach (string path in imagePaths)
         {
-            byte[] fileData = File.ReadAllBytes(path);
-            Texture2D texture = new Texture2D(2, 2);
+            StartCoroutine(LoadImageCoroutine(path));
+        }
+    }
 
-            if (texture.LoadImage(fileData))
+    IEnumerator LoadImageCoroutine(string path)
+    {
+        byte[] fileData = File.ReadAllBytes(path);
+        Texture2D texture = new Texture2D(2, 2);
+
+        if (texture.LoadImage(fileData))
+        {
+            texture.name = Path.GetFileNameWithoutExtension(path);
+            loadedImages.Add(texture);
+            Debug.Log($"[ImageViewerController] Loaded image: {texture.name}");
+
+            // If this is the first image, display it immediately
+            if (loadedImages.Count == 1)
             {
-                texture.name = Path.GetFileName(path);
-                loadedImages.Add(texture);
-                Debug.Log($"Loaded image: {texture.name}");
+                DisplayCurrentImage();
             }
         }
+        else
+        {
+            Debug.LogError($"[ImageViewerController] Failed to load image: {path}");
+        }
 
-        Debug.Log($"Total images loaded: {loadedImages.Count}");
+        yield return null;
     }
 
     void DisplayCurrentImage()
@@ -81,6 +110,17 @@ public class ImageViewerController : MonoBehaviour
 
         // Display the image
         displayImage.texture = loadedImages[currentImageIndex];
+
+        // Adjust the aspect ratio of the RawImage to match the texture
+        if (displayImage.texture != null)
+        {
+            float aspectRatio = (float)displayImage.texture.width / displayImage.texture.height;
+            RectTransform rectTransform = displayImage.GetComponent<RectTransform>();
+
+            // Maintain height and adjust width
+            float currentHeight = rectTransform.sizeDelta.y;
+            rectTransform.sizeDelta = new Vector2(currentHeight * aspectRatio, currentHeight);
+        }
 
         // Update the counter
         string fileName = loadedImages[currentImageIndex].name;
@@ -113,5 +153,18 @@ public class ImageViewerController : MonoBehaviour
             currentImageIndex = loadedImages.Count - 1;
 
         DisplayCurrentImage();
+    }
+
+    // Clean up textures when the object is destroyed
+    void OnDestroy()
+    {
+        foreach (var texture in loadedImages)
+        {
+            if (texture != null)
+            {
+                Destroy(texture);
+            }
+        }
+        loadedImages.Clear();
     }
 }
