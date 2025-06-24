@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,17 +7,15 @@ public class QuestionDisplayManager : MonoBehaviour
 {
     [Header("UI References")]
     public TextMeshProUGUI questionText;
-    public RectTransform optionsContainer;
-    public GameObject optionButtonPrefab;
+    public RectTransform optionsPanel;
+    public Slider sliderPrefab;
 
     [Header("Data Settings")]
     public string dataFolder = "Data/Questions";
 
-    [Header("Appearance Settings")]
-    public Color[] buttonColors;
-
     private QuestionData currentQuestionData;
-    private List<GameObject> activeOptionButtons = new List<GameObject>();
+    private Slider instantiatedSlider;
+    private TextMeshProUGUI valueText;
 
     void Start()
     {
@@ -27,13 +24,13 @@ public class QuestionDisplayManager : MonoBehaviour
 
     void LoadAndDisplayQuestion(string fileName)
     {
+        // Load JSON
         string path = Path.Combine(Application.streamingAssetsPath, dataFolder, fileName + ".json");
         if (!File.Exists(path))
         {
             Debug.LogError($"File not found: {path}");
             return;
         }
-
         string json = File.ReadAllText(path);
         currentQuestionData = JsonUtility.FromJson<QuestionData>(json);
         if (currentQuestionData == null)
@@ -42,55 +39,40 @@ public class QuestionDisplayManager : MonoBehaviour
             return;
         }
 
-        if (currentQuestionData.x_labels == null || currentQuestionData.y_values == null ||
-            currentQuestionData.x_labels.Length != currentQuestionData.y_values.Length)
-        {
-            Debug.LogError("x_labels and y_values are missing or mismatched");
-            return;
-        }
-
+        // Display question text
         questionText.text = currentQuestionData.task.question;
-        DisplayOptions();
+
+        // Instantiate slider
+        if (instantiatedSlider == null)
+        {
+            instantiatedSlider = Instantiate(sliderPrefab, optionsPanel);
+            // Find the Text child named "Value" in the prefab
+            Transform valueTransform = instantiatedSlider.transform.Find("Value");
+            if (valueTransform != null)
+                valueText = valueTransform.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogWarning("Value text child not found on slider prefab.");
+
+            // Add listener to update text in real time
+            instantiatedSlider.onValueChanged.AddListener(UpdateValueText);
+        }
+
+        // Configure slider
+        instantiatedSlider.minValue = 0;
+        instantiatedSlider.maxValue = 100;
+        if (currentQuestionData.y_values != null && currentQuestionData.y_values.Length > 0)
+        {
+            instantiatedSlider.value = currentQuestionData.y_values[0];
+        }
+
+        // Update the text immediately
+        UpdateValueText(instantiatedSlider.value);
+        instantiatedSlider.gameObject.SetActive(true);
     }
 
-    void DisplayOptions()
+    private void UpdateValueText(float val)
     {
-        // Clear existing buttons
-        foreach (var btn in activeOptionButtons)
-            Destroy(btn);
-        activeOptionButtons.Clear();
-
-        for (int i = 0; i < currentQuestionData.x_labels.Length; i++)
-        {
-            CreateOptionButton(currentQuestionData.x_labels[i], currentQuestionData.y_values[i], i);
-        }
-    }
-
-    void CreateOptionButton(string label, float value, int index)
-    {
-        GameObject btnObj = Instantiate(optionButtonPrefab, optionsContainer);
-        activeOptionButtons.Add(btnObj);
-
-        var layout = btnObj.GetComponent<LayoutElement>() ?? btnObj.AddComponent<LayoutElement>();
-        layout.flexibleWidth = 1;
-        layout.minHeight = 50;
-
-        // Tint background
-        Image img = btnObj.GetComponent<Image>();
-        if (img != null && buttonColors != null && buttonColors.Length > 0)
-            img.color = buttonColors[index % buttonColors.Length];
-
-        // Set text
-        TextMeshProUGUI txt = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-        if (txt != null)
-            txt.text = $"{label}: {value}%";
-
-        // Hook up click to log label/value
-        Button btn = btnObj.GetComponent<Button>();
-        if (btn != null && txt != null)
-        {
-            string message = txt.text;
-            btn.onClick.AddListener(() => Debug.Log(message));
-        }
+        if (valueText != null)
+            valueText.text = $"{val:0}%";
     }
 }
