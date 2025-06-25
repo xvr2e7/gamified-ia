@@ -114,4 +114,13 @@ public class QuestionDisplayManager : MonoBehaviour
         if (valueText != null)
             valueText.text = $"{val:0}%";
     }
+
+    public float GetCurrentSliderValue()
+    {
+        if (instantiatedSlider != null)
+        {
+            return instantiatedSlider.value;
+        }
+        return -1f; // if no slider exists
+    }
 }

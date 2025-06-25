@@ -9,6 +9,7 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
     private QuestionDisplayManager questionManager;
     private BoxCollider boxCollider;
     private bool isHovered = false;
+    private StudyDataLogger dataLogger;
 
     [Header("Visual Feedback")]
     [SerializeField] private Color normalColor = Color.white;
@@ -40,6 +41,12 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
         }
 
         questionManager = FindObjectOfType<QuestionDisplayManager>();
+
+        // Get data logger reference
+        if (imageViewer != null)
+        {
+            dataLogger = imageViewer.GetComponent<StudyDataLogger>();
+        }
     }
 
     // UI Event System callbacks for Vive pointer
@@ -92,10 +99,32 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     private void HandleClick()
     {
+        // Get slider value before advancing
+        float sliderValue = 50f; // Default value
+        if (questionManager != null && questionManager.GetCurrentSliderValue() != -1)
+        {
+            sliderValue = questionManager.GetCurrentSliderValue();
+        }
+
+        // Record data for current image before advancing
+        if (dataLogger != null && imageViewer != null)
+        {
+            dataLogger.RecordImageData(
+                imageViewer.GetCurrentImageIndex(),
+                imageViewer.GetCurrentImageName(),
+                sliderValue
+            );
+        }
+
         // Advance image
         if (imageViewer != null)
         {
             imageViewer.NextImage();
+            // Start timer for next image
+            if (dataLogger != null)
+            {
+                dataLogger.StartImageTimer();
+            }
         }
         else
         {
