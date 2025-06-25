@@ -4,25 +4,6 @@ using System.IO;
 using UnityEngine;
 using System.Text;
 
-[Serializable]
-public class ImageStudyRecord
-{
-    public int imageIndex;
-    public string imageName;
-    public float timeSpent;
-    public float sliderValue;
-    public string timestamp;
-
-    public ImageStudyRecord(int index, string name, float time, float value)
-    {
-        imageIndex = index;
-        imageName = name;
-        timeSpent = time;
-        sliderValue = value;
-        timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-    }
-}
-
 public class StudyDataLogger : MonoBehaviour
 {
     private List<ImageStudyRecord> studyRecords = new List<ImageStudyRecord>();
@@ -33,12 +14,12 @@ public class StudyDataLogger : MonoBehaviour
         currentImageStartTime = Time.time;
     }
 
-    public void RecordImageData(int imageIndex, string imageName, float sliderValue)
+    public void RecordImageData(int imageIndex, string imageName, float sliderValue, string selectedOption, string taskType, string correctAnswer)
     {
         float timeSpent = Time.time - currentImageStartTime;
-        ImageStudyRecord record = new ImageStudyRecord(imageIndex, imageName, timeSpent, sliderValue);
+        ImageStudyRecord record = new ImageStudyRecord(imageIndex, imageName, timeSpent, sliderValue, selectedOption, taskType, correctAnswer);
         studyRecords.Add(record);
-        Debug.Log($"[StudyDataLogger] Recorded: Image {imageName}, Time: {timeSpent:F2}s, Slider: {sliderValue:F0}%");
+        Debug.Log($"[StudyDataLogger] Recorded: Image {imageName}, Time: {timeSpent:F2}s, Slider: {sliderValue:F0}%, Option: {selectedOption}, Type: {taskType}");
     }
 
     public void SaveToFile()
@@ -53,19 +34,22 @@ public class StudyDataLogger : MonoBehaviour
         string filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         StringBuilder csv = new StringBuilder();
-        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),Timestamp");
+        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,Timestamp");
 
         foreach (var record in studyRecords)
         {
-            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{record.sliderValue:F0},{record.timestamp}");
+            // Format slider value as empty string if it's -1 (for MIN_X questions)
+            string sliderValueStr = record.sliderValue == -1 ? "" : $"{record.sliderValue:F0}";
+
+            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{record.timestamp}");
         }
 
         File.WriteAllText(filePath, csv.ToString());
         Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
     }
+
     public void ClearData()
     {
         studyRecords.Clear();
     }
 }
-

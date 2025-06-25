@@ -2,54 +2,37 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(BoxCollider))]
-public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+[RequireComponent(typeof(RawImage))]
+public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-    private ImageViewerController imageViewer;
-    private QuestionDisplayManager questionManager;
-    private BoxCollider boxCollider;
-    private bool isHovered = false;
-    private StudyDataLogger dataLogger;
+    [Header("References")]
+    public StudyDataLogger dataLogger;
+    public ImageViewerController imageViewer;
+    public QuestionDisplayManager questionManager;
 
     [Header("Visual Feedback")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color hoverColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+    public Color normalColor = Color.white;
+    public Color hoverColor = new Color(0.9f, 0.9f, 0.9f);
+
     private RawImage rawImage;
-
-    void Awake()
-    {
-        boxCollider = GetComponent<BoxCollider>();
-        rawImage = GetComponent<RawImage>();
-
-        if (boxCollider == null)
-        {
-            boxCollider = gameObject.AddComponent<BoxCollider>();
-        }
-
-        if (rawImage != null)
-        {
-            rawImage.raycastTarget = true;
-        }
-    }
 
     void Start()
     {
-        imageViewer = GetComponentInParent<ImageViewerController>();
+        rawImage = GetComponent<RawImage>();
+        if (rawImage != null)
+        {
+            rawImage.color = normalColor;
+        }
+
+        // Auto-find references
+        if (dataLogger == null)
+            dataLogger = FindObjectOfType<StudyDataLogger>();
         if (imageViewer == null)
-        {
             imageViewer = FindObjectOfType<ImageViewerController>();
-        }
-
-        questionManager = FindObjectOfType<QuestionDisplayManager>();
-
-        // Get data logger reference
-        if (imageViewer != null)
-        {
-            dataLogger = imageViewer.GetComponent<StudyDataLogger>();
-        }
+        if (questionManager == null)
+            questionManager = FindObjectOfType<QuestionDisplayManager>();
     }
 
-    // UI Event System callbacks for Vive pointer
     public void OnPointerClick(PointerEventData eventData)
     {
         HandleClick();
@@ -57,7 +40,6 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        isHovered = true;
         if (rawImage != null)
         {
             rawImage.color = hoverColor;
@@ -66,44 +48,40 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        isHovered = false;
         if (rawImage != null)
         {
             rawImage.color = normalColor;
         }
     }
 
-    void OnMouseEnter()
-    {
-        if (!isHovered)
-        {
-            isHovered = true;
-            if (rawImage != null)
-            {
-                rawImage.color = hoverColor;
-            }
-        }
-    }
-
-    void OnMouseExit()
-    {
-        if (isHovered)
-        {
-            isHovered = false;
-            if (rawImage != null)
-            {
-                rawImage.color = normalColor;
-            }
-        }
-    }
-
     private void HandleClick()
     {
-        // Get slider value before advancing
-        float sliderValue = 50f; // Default value
-        if (questionManager != null && questionManager.GetCurrentSliderValue() != -1)
+        // Get input value based on question type
+        float sliderValue = -1f;
+        string selectedOption = "";
+        string taskType = "";
+        string correctAnswer = "";
+
+        if (questionManager != null)
         {
-            sliderValue = questionManager.GetCurrentSliderValue();
+            taskType = questionManager.GetCurrentTaskType();
+            correctAnswer = questionManager.GetCorrectAnswer();
+
+            // Check if it's a slider question
+            if (taskType == "VALUE_PART")
+            {
+                sliderValue = questionManager.GetCurrentSliderValue();
+            }
+            // Check if it's a button question
+            else if (taskType == "MIN_X")
+            {
+                int optionIndex = questionManager.GetSelectedOptionIndex();
+                if (optionIndex != -1)
+                {
+                    selectedOption = questionManager.GetSelectedOptionText();
+                }
+                // Keep sliderValue as -1 for MIN_X questions
+            }
         }
 
         // Record data for current image before advancing
@@ -112,7 +90,10 @@ public class ImageClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEn
             dataLogger.RecordImageData(
                 imageViewer.GetCurrentImageIndex(),
                 imageViewer.GetCurrentImageName(),
-                sliderValue
+                sliderValue,
+                selectedOption,
+                taskType,
+                correctAnswer
             );
         }
 

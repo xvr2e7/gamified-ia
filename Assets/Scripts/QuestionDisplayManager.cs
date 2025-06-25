@@ -11,6 +11,12 @@ public class QuestionDisplayManager : MonoBehaviour
     public TextMeshProUGUI questionText;
     public RectTransform optionsPanel;
     public Slider sliderPrefab;
+    public Button buttonPrefab;
+
+    [Header("Layout Settings")]
+    public int buttonsPerRow = 2;
+    public float buttonSpacing = 10f;
+    public Vector2 buttonSize = new Vector2(150, 50);
 
     [Header("Data Settings")]
     public string dataFolder = "Data/Questions";
@@ -18,6 +24,8 @@ public class QuestionDisplayManager : MonoBehaviour
     private QuestionData currentQuestionData;
     private Slider instantiatedSlider;
     private TextMeshProUGUI valueText;
+    private List<Button> instantiatedButtons = new List<Button>();
+    private int selectedOptionIndex = -1;
 
     private List<string> questionFiles = new List<string>();
     private int currentQuestionIndex = 0;
@@ -54,7 +62,7 @@ public class QuestionDisplayManager : MonoBehaviour
 
         currentQuestionIndex = (currentQuestionIndex + 1) % questionFiles.Count;
         LoadAndDisplayQuestion(questionFiles[currentQuestionIndex]);
-        ResetSlider();
+        ResetInput();
     }
 
     void LoadAndDisplayQuestion(string fileName)
@@ -77,36 +85,167 @@ public class QuestionDisplayManager : MonoBehaviour
         // Display question text
         questionText.text = currentQuestionData.task.question;
 
-        // Instantiate slider
-        if (instantiatedSlider == null)
-        {
-            instantiatedSlider = Instantiate(sliderPrefab, optionsPanel);
-            Transform valueTransform = instantiatedSlider.transform.Find("Value");
-            if (valueTransform != null)
-                valueText = valueTransform.GetComponent<TextMeshProUGUI>();
-            else
-                Debug.LogWarning("Value text child not found on slider prefab.");
+        // Clear previous UI elements
+        ClearInstantiatedElements();
 
-            instantiatedSlider.onValueChanged.AddListener(UpdateValueText);
+        // Set up appropriate input based on question type
+        if (currentQuestionData.task.task_type == "VALUE_PART")
+        {
+            SetupSlider();
         }
+        else if (currentQuestionData.task.task_type == "MIN_X")
+        {
+            SetupButtons();
+        }
+        else
+        {
+            Debug.LogWarning($"Unknown task type: {currentQuestionData.task.task_type}");
+            // Default to slider if unknown
+            SetupSlider();
+        }
+    }
+
+    void SetupSlider()
+    {
+        // Instantiate slider
+        instantiatedSlider = Instantiate(sliderPrefab, optionsPanel);
+        Transform valueTransform = instantiatedSlider.transform.Find("Value");
+        if (valueTransform != null)
+            valueText = valueTransform.GetComponent<TextMeshProUGUI>();
+        else
+            Debug.LogWarning("Value text child not found on slider prefab");
+
+        instantiatedSlider.onValueChanged.AddListener(UpdateValueText);
 
         // Configure slider
         instantiatedSlider.minValue = 0;
         instantiatedSlider.maxValue = 100;
-
         instantiatedSlider.value = 50; // start at middle to avoid anchoring
 
         UpdateValueText(instantiatedSlider.value);
         instantiatedSlider.gameObject.SetActive(true);
     }
 
-    void ResetSlider()
+    void SetupButtons()
+    {
+        // For MIN_X questions, use x_labels as options if options array is not provided
+        string[] options = currentQuestionData.task.options;
+        if ((options == null || options.Length == 0) && currentQuestionData.x_labels != null)
+        {
+            options = currentQuestionData.x_labels;
+            Debug.Log($"Using x_labels as options, count: {options.Length}");
+        }
+
+        if (options == null || options.Length == 0)
+        {
+            Debug.LogError("No options found for MIN_X question");
+            return;
+        }
+
+        // Create a container for grid layout
+        GameObject gridContainer = new GameObject("ButtonGrid");
+        gridContainer.transform.SetParent(optionsPanel, false);
+        RectTransform gridRect = gridContainer.AddComponent<RectTransform>();
+
+        // Add GridLayoutGroup
+        GridLayoutGroup gridLayout = gridContainer.AddComponent<GridLayoutGroup>();
+        gridLayout.cellSize = buttonSize;
+        gridLayout.spacing = new Vector2(buttonSpacing, buttonSpacing);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = buttonsPerRow;
+        gridLayout.childAlignment = TextAnchor.MiddleCenter;
+
+        // Set grid size based on number of options
+        int optionCount = options.Length;
+        int rows = Mathf.CeilToInt((float)optionCount / buttonsPerRow);
+        float gridWidth = (buttonSize.x * buttonsPerRow) + (buttonSpacing * (buttonsPerRow - 1));
+        float gridHeight = (buttonSize.y * rows) + (buttonSpacing * (rows - 1));
+        gridRect.sizeDelta = new Vector2(gridWidth, gridHeight);
+
+        // Instantiate buttons
+        for (int i = 0; i < optionCount; i++)
+        {
+            Button btn = Instantiate(buttonPrefab, gridContainer.transform);
+            int index = i; // Capture for lambda
+
+            // Set button text
+            TextMeshProUGUI btnText = btn.GetComponentInChildren<TextMeshProUGUI>();
+            if (btnText != null)
+            {
+                btnText.text = options[i];
+            }
+
+            // Add click listener
+            btn.onClick.AddListener(() => OnButtonClicked(index));
+
+            instantiatedButtons.Add(btn);
+        }
+    }
+
+    void OnButtonClicked(int index)
+    {
+        selectedOptionIndex = index;
+
+        // Get the actual option text
+        string selectedText = "";
+        if (currentQuestionData.task.options != null && index < currentQuestionData.task.options.Length)
+        {
+            selectedText = currentQuestionData.task.options[index];
+        }
+        else if (currentQuestionData.x_labels != null && index < currentQuestionData.x_labels.Length)
+        {
+            selectedText = currentQuestionData.x_labels[index];
+        }
+
+        Debug.Log($"Selected option {index}: {selectedText}");
+
+        // Visual feedback
+        for (int i = 0; i < instantiatedButtons.Count; i++)
+        {
+            ColorBlock colors = instantiatedButtons[i].colors;
+            if (i == index)
+            {
+                colors.normalColor = new Color(0.8f, 0.8f, 0.8f); // Highlight color
+            }
+            else
+            {
+                colors.normalColor = Color.white; // Default color
+            }
+            instantiatedButtons[i].colors = colors;
+        }
+    }
+
+    void ClearInstantiatedElements()
+    {
+        // Clear slider
+        if (instantiatedSlider != null)
+        {
+            Destroy(instantiatedSlider.gameObject);
+            instantiatedSlider = null;
+            valueText = null;
+        }
+
+        // Clear buttons and their container
+        if (instantiatedButtons.Count > 0)
+        {
+            // Destroy the grid container which will also destroy all buttons
+            if (instantiatedButtons[0] != null && instantiatedButtons[0].transform.parent != null)
+            {
+                Destroy(instantiatedButtons[0].transform.parent.gameObject);
+            }
+        }
+        instantiatedButtons.Clear();
+        selectedOptionIndex = -1;
+    }
+
+    void ResetInput()
     {
         if (instantiatedSlider != null)
         {
-            instantiatedSlider.value = 50; // Reset to middle position
+            instantiatedSlider.value = 50;
             UpdateValueText(instantiatedSlider.value);
         }
+        selectedOptionIndex = -1;
     }
 
     private void UpdateValueText(float val)
@@ -121,6 +260,45 @@ public class QuestionDisplayManager : MonoBehaviour
         {
             return instantiatedSlider.value;
         }
-        return -1f; // if no slider exists
+        return -1f;
+    }
+
+    public int GetSelectedOptionIndex()
+    {
+        return selectedOptionIndex;
+    }
+
+    public string GetSelectedOptionText()
+    {
+        if (selectedOptionIndex >= 0)
+        {
+            if (currentQuestionData.task.options != null && selectedOptionIndex < currentQuestionData.task.options.Length)
+            {
+                return currentQuestionData.task.options[selectedOptionIndex];
+            }
+            else if (currentQuestionData.x_labels != null && selectedOptionIndex < currentQuestionData.x_labels.Length)
+            {
+                return currentQuestionData.x_labels[selectedOptionIndex];
+            }
+        }
+        return "";
+    }
+
+    public string GetCurrentTaskType()
+    {
+        if (currentQuestionData != null && currentQuestionData.task != null)
+        {
+            return currentQuestionData.task.task_type;
+        }
+        return "";
+    }
+
+    public string GetCorrectAnswer()
+    {
+        if (currentQuestionData != null && currentQuestionData.task != null)
+        {
+            return currentQuestionData.task.answer;
+        }
+        return "";
     }
 }
