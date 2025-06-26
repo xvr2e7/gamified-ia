@@ -4,13 +4,14 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
-public class ImageViewerController : MonoBehaviour
+public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("UI References")]
     [SerializeField] private RawImage displayImage;
     [SerializeField] private TextMeshProUGUI imageCounter;
-    [SerializeField] private Button startButton;
+    [SerializeField] private TextMeshProUGUI startText;
 
     [Header("Panels")]
     [SerializeField] private GameObject openingPanel;
@@ -18,20 +19,34 @@ public class ImageViewerController : MonoBehaviour
     [SerializeField] private GameObject questionPanel;
     [SerializeField] private GameObject sliderPanel;
 
+    [Header("Visual Feedback")]
+    [SerializeField] private Color normalPanelColor = new Color(1f, 1f, 1f, 0.392f);
+    [SerializeField] private Color hoverPanelColor = new Color(0.9f, 0.9f, 0.9f, 0.5f);
+
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
 
     private List<Texture2D> loadedImages = new List<Texture2D>();
     private int currentImageIndex = 0;
     private StudyDataLogger dataLogger;
+    private Image openingPanelImage;
 
     private void Awake()
     {
-        // Hook Start button
-        if (startButton != null)
-            startButton.onClick.AddListener(StartStudy);
-
         dataLogger = gameObject.AddComponent<StudyDataLogger>();
+
+        // Set up opening panel to receive raycasts
+        if (openingPanel != null)
+        {
+            openingPanelImage = openingPanel.GetComponent<Image>();
+            if (openingPanelImage == null)
+            {
+                openingPanelImage = openingPanel.AddComponent<Image>();
+            }
+            // Set initial color
+            openingPanelImage.color = normalPanelColor;
+            openingPanelImage.raycastTarget = true;
+        }
     }
 
     private void Start()
@@ -45,6 +60,33 @@ public class ImageViewerController : MonoBehaviour
         sliderPanel.SetActive(false);
 
         LoadImages();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        // Only change color if opening panel is active
+        if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
+        {
+            openingPanelImage.color = hoverPanelColor;
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        // Reset color when pointer exits
+        if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
+        {
+            openingPanelImage.color = normalPanelColor;
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // Start study if opening panel is active
+        if (openingPanel != null && openingPanel.activeSelf)
+        {
+            StartStudy();
+        }
     }
 
     public void StartStudy()
@@ -151,9 +193,8 @@ public class ImageViewerController : MonoBehaviour
 
     private void Update()
     {
-        // When the opening panel is active, allow Space to start the study
-        if (openingPanel != null && openingPanel.activeSelf &&
-            Input.GetKeyDown(KeyCode.Space))
+        // Hotkey to begin: space
+        if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
         {
             StartStudy();
         }

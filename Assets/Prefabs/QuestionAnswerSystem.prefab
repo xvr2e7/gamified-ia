@@ -183,6 +183,10 @@ MonoBehaviour:
   questionText: {fileID: 4119034891678042323}
   optionsPanel: {fileID: 1959747109155866233}
   sliderPrefab: {fileID: 9143327752632002420, guid: 342e4f7bef3174e479d69e52f15a5e44, type: 3}
+  buttonPrefab: {fileID: 1244240748064610724, guid: cb2da7e5f6ada44a2a37a376d0ed5195, type: 3}
+  buttonsPerRow: 2
+  buttonSpacing: 10
+  buttonSize: {x: 150, y: 30}
   dataFolder: Data/Questions
 --- !u!1 &7925652785502078176
 GameObject:
