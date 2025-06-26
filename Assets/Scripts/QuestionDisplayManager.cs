@@ -205,11 +205,19 @@ public class QuestionDisplayManager : MonoBehaviour
             ColorBlock colors = instantiatedButtons[i].colors;
             if (i == index)
             {
-                colors.normalColor = new Color(0.8f, 0.8f, 0.8f); // Highlight color
+                // Yellow color for selected button
+                colors.normalColor = new Color(1f, 0.92f, 0.016f); // Yellow
+                colors.highlightedColor = new Color(1f, 0.92f, 0.016f);
+                colors.pressedColor = new Color(0.8f, 0.74f, 0.01f); // Darker yellow
+                colors.selectedColor = new Color(1f, 0.92f, 0.016f);
             }
             else
             {
-                colors.normalColor = Color.white; // Default color
+                // Grey color for unselected buttons
+                colors.normalColor = new Color(0.5f, 0.5f, 0.5f); // Grey
+                colors.highlightedColor = new Color(0.6f, 0.6f, 0.6f);
+                colors.pressedColor = new Color(0.4f, 0.4f, 0.4f);
+                colors.selectedColor = new Color(0.5f, 0.5f, 0.5f);
             }
             instantiatedButtons[i].colors = colors;
         }
