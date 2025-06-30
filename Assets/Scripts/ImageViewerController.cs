@@ -17,7 +17,7 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
     [SerializeField] private GameObject openingPanel;
     [SerializeField] private GameObject endingPanel;
     [SerializeField] private GameObject questionPanel;
-    [SerializeField] private GameObject sliderPanel;
+    [SerializeField] private GameObject optionsPanel;
 
     [Header("Visual Feedback")]
     [SerializeField] private Color normalPanelColor = new Color(1f, 1f, 1f, 0.392f);
@@ -57,7 +57,7 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
-        sliderPanel.SetActive(false);
+        optionsPanel.SetActive(false);
 
         LoadImages();
     }
@@ -96,7 +96,7 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         displayImage.gameObject.SetActive(true);
         imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
-        sliderPanel.SetActive(true);
+        optionsPanel.SetActive(true);
 
         if (loadedImages.Count > 0)
         {
@@ -175,7 +175,7 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
-        sliderPanel.SetActive(false);
+        optionsPanel.SetActive(false);
         endingPanel.SetActive(true);
     }
 
