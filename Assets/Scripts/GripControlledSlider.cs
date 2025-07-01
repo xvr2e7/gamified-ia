@@ -4,11 +4,8 @@ using UnityEngine.InputSystem;
 
 public class GripControlledSlider : MonoBehaviour
 {
-    [Header("Slider Reference")]
-    [SerializeField] private Slider targetSlider;
-
     [Header("Speed Settings")]
-    [SerializeField] private float changeSpeed = 2.0f;
+    [SerializeField] private float changeSpeed = 1.0f;
     [SerializeField] private AnimationCurve accelerationCurve = AnimationCurve.Linear(0f, 1f, 2f, 3f);
     [SerializeField] private float maxSpeedMultiplier = 3f;
 
@@ -22,16 +19,6 @@ public class GripControlledSlider : MonoBehaviour
 
     void Start()
     {
-        if (targetSlider == null)
-            targetSlider = GetComponent<Slider>();
-
-        if (targetSlider == null)
-        {
-            Debug.LogError("No Slider component found!");
-            enabled = false;
-            return;
-        }
-
         if (leftGripActionReference != null)
             leftGripActionReference.action.Enable();
         if (rightGripActionReference != null)
@@ -41,6 +28,11 @@ public class GripControlledSlider : MonoBehaviour
     void Update()
     {
         if (leftGripActionReference == null || rightGripActionReference == null)
+            return;
+
+        // Find the currently active slider in the scene
+        Slider activeSlider = FindObjectOfType<Slider>();
+        if (activeSlider == null)
             return;
 
         float leftGripValue = leftGripActionReference.action.ReadValue<float>();
@@ -77,10 +69,10 @@ public class GripControlledSlider : MonoBehaviour
 
             float changeAmount = changeDirection * changeSpeed * speedMultiplier * Time.deltaTime;
 
-            targetSlider.value = Mathf.Clamp(
-                targetSlider.value + changeAmount * (targetSlider.maxValue - targetSlider.minValue),
-                targetSlider.minValue,
-                targetSlider.maxValue
+            activeSlider.value = Mathf.Clamp(
+                activeSlider.value + changeAmount * (activeSlider.maxValue - activeSlider.minValue),
+                activeSlider.minValue,
+                activeSlider.maxValue
             );
         }
     }
