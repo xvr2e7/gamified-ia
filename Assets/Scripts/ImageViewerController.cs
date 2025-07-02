@@ -17,7 +17,8 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
     [SerializeField] private GameObject openingPanel;
     [SerializeField] private GameObject endingPanel;
     [SerializeField] private GameObject questionPanel;
-    [SerializeField] private GameObject optionsPanel;
+    [SerializeField] private GameObject sliderPanel;
+    [SerializeField] private GameObject buttonPanel;
 
     [Header("Visual Feedback")]
     [SerializeField] private Color normalPanelColor = new Color(1f, 1f, 1f, 0.392f);
@@ -25,6 +26,8 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
+
+    [SerializeField] private QuestionDisplayManager questionManager;
 
     private List<Texture2D> loadedImages = new List<Texture2D>();
     private int currentImageIndex = 0;
@@ -35,68 +38,55 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
     {
         dataLogger = gameObject.AddComponent<StudyDataLogger>();
 
-        // Set up opening panel to receive raycasts
+        // Opening panel needs a raycast target
         if (openingPanel != null)
         {
-            openingPanelImage = openingPanel.GetComponent<Image>();
-            if (openingPanelImage == null)
-            {
-                openingPanelImage = openingPanel.AddComponent<Image>();
-            }
-            // Set initial color
+            openingPanelImage = openingPanel.GetComponent<Image>() ?? openingPanel.AddComponent<Image>();
             openingPanelImage.color = normalPanelColor;
             openingPanelImage.raycastTarget = true;
         }
+
+        if (sliderPanel != null) sliderPanel.SetActive(false);
+        if (buttonPanel != null) buttonPanel.SetActive(false);
     }
 
     private void Start()
     {
-        // Initial UI state
         openingPanel.SetActive(true);
         endingPanel.SetActive(false);
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
-        optionsPanel.SetActive(false);
 
         LoadImages();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // Only change color if opening panel is active
         if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
-        {
             openingPanelImage.color = hoverPanelColor;
-        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        // Reset color when pointer exits
         if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
-        {
             openingPanelImage.color = normalPanelColor;
-        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // Start study if opening panel is active
         if (openingPanel != null && openingPanel.activeSelf)
-        {
             StartStudy();
-        }
     }
 
     public void StartStudy()
     {
-        // Show study UI
         openingPanel.SetActive(false);
         displayImage.gameObject.SetActive(true);
         imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
-        optionsPanel.SetActive(true);
+
+        questionManager.InitializeQuestions();
 
         if (loadedImages.Count > 0)
         {
@@ -175,7 +165,11 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
-        optionsPanel.SetActive(false);
+        sliderPanel.SetActive(false);
+        buttonPanel.SetActive(false);
+
+        questionManager.enabled = false;
+
         endingPanel.SetActive(true);
     }
 
@@ -186,19 +180,13 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         return loadedImages[currentImageIndex].name;
     }
 
-    public int GetCurrentImageIndex()
-    {
-        return currentImageIndex;
-    }
+    public int GetCurrentImageIndex() => currentImageIndex;
 
-    private void Update()
-    {
-        // Hotkey to begin: space
-        if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
-        {
-            StartStudy();
-        }
-    }
+    // private void Update()
+    // {
+    //     if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
+    //         StartStudy();
+    // }
 
     private void OnDestroy()
     {

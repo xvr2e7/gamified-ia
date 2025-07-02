@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 893370223870606961}
   - component: {fileID: 8324347218904288056}
   - component: {fileID: 6525831851478958123}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BeginText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,15 +92,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 15
-  m_fontSizeBase: 15
+  m_fontSize: 14
+  m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 1177265014694643036}
   - component: {fileID: 2410590598111107880}
   - component: {fileID: 1170582918985149636}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ImageCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,8 +163,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1320593080607718531}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2}
-  m_LocalScale: {x: 0.005, y: 0.005, z: 0.005}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4103971985459219655}
@@ -175,8 +175,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 1.6}
-  m_SizeDelta: {x: 400, y: 300}
+  m_AnchoredPosition: {x: 0, y: -10}
+  m_SizeDelta: {x: 360, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &8030286715344446577
 Canvas:
@@ -281,8 +281,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4660017833910611838}
-  - component: {fileID: 7887963144935907905}
-  m_Layer: 0
+  - component: {fileID: 337943369897732006}
+  m_Layer: 5
   m_Name: ImageViewer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -305,7 +305,7 @@ Transform:
   - {fileID: 2773392199343043509}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7887963144935907905
+--- !u!114 &337943369897732006
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -319,12 +319,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayImage: {fileID: 2746271300286709847}
   imageCounter: {fileID: 4527503620866669231}
-  startButton: {fileID: 0}
+  startText: {fileID: 6525831851478958123}
   openingPanel: {fileID: 6140558977648695774}
   endingPanel: {fileID: 7988635847156810609}
   questionPanel: {fileID: 0}
   sliderPanel: {fileID: 0}
+  buttonPanel: {fileID: 0}
+  normalPanelColor: {r: 1, g: 1, b: 1, a: 0.392}
+  hoverPanelColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.5}
   imageFolderPath: Data/SampleImages
+  questionManager: {fileID: 0}
 --- !u!1 &2943271879974559244
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,7 +342,7 @@ GameObject:
   - component: {fileID: 2746271300286709847}
   - component: {fileID: 7319750650157736630}
   - component: {fileID: 67739545494938288}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: DisplayImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -362,7 +366,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 380, y: 280}
+  m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6640816021359868043
 CanvasRenderer:
@@ -448,7 +452,7 @@ GameObject:
   - component: {fileID: 9033277916107389437}
   - component: {fileID: 4280021041729494926}
   - component: {fileID: 7461393212968981829}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: StudyText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -529,15 +533,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -582,7 +586,7 @@ GameObject:
   - component: {fileID: 5746488713650616108}
   - component: {fileID: 2523067798676153316}
   - component: {fileID: 4527503620866669231}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ImageCounter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -605,7 +609,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -10, y: -10}
+  m_AnchoredPosition: {x: -100, y: -20}
   m_SizeDelta: {x: 200, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2523067798676153316
@@ -663,8 +667,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 15
-  m_fontSizeBase: 15
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -716,7 +720,7 @@ GameObject:
   - component: {fileID: 4103971985459219655}
   - component: {fileID: 108919063224501320}
   - component: {fileID: 128574256746887376}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: OpeningPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -739,10 +743,10 @@ RectTransform:
   - {fileID: 893370223870606961}
   m_Father: {fileID: 2773392199343043509}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 300}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 175, y: -150}
+  m_SizeDelta: {x: 350, y: 300}
   m_Pivot: {x: 1, y: 0}
 --- !u!222 &108919063224501320
 CanvasRenderer:
@@ -793,7 +797,7 @@ GameObject:
   - component: {fileID: 7564273342977199807}
   - component: {fileID: 531465502613304427}
   - component: {fileID: 2948471078329796678}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: StudyText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -874,15 +878,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -927,7 +931,7 @@ GameObject:
   - component: {fileID: 2036997041647725685}
   - component: {fileID: 6276277865760825518}
   - component: {fileID: 494390860100298228}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: EndingPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -949,11 +953,11 @@ RectTransform:
   - {fileID: 9033277916107389437}
   m_Father: {fileID: 2773392199343043509}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 300}
-  m_Pivot: {x: 1, y: 0}
+  m_SizeDelta: {x: 300, y: 300}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6276277865760825518
 CanvasRenderer:
   m_ObjectHideFlags: 0

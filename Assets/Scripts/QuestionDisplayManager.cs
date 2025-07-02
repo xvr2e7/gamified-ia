@@ -9,223 +9,149 @@ public class QuestionDisplayManager : MonoBehaviour
 {
     [Header("UI References")]
     public TextMeshProUGUI questionText;
-    public RectTransform optionsPanel;
+
+    [Header("Panels")]
+    public GameObject sliderPanel;
+    public GameObject buttonPanel;
+
+    [Header("Prefabs")]
     public Slider sliderPrefab;
     public Button buttonPrefab;
-
-    [Header("Layout Settings")]
-    public int buttonsPerRow = 2;
-    public float buttonSpacing = 10f;
-    public Vector2 buttonSize = new Vector2(150, 50);
 
     [Header("Data Settings")]
     public string dataFolder = "Data/Questions";
 
     private QuestionData currentQuestionData;
-    private Slider instantiatedSlider;
-    private TextMeshProUGUI valueText;
-    private List<Button> instantiatedButtons = new List<Button>();
-    private int selectedOptionIndex = -1;
-
     private List<string> questionFiles = new List<string>();
     private int currentQuestionIndex = 0;
 
-    void Start()
+    private Slider instantiatedSlider;
+    private TextMeshProUGUI valueText;
+
+    void Awake()
+    {
+        // Hide panels before anything renders
+        sliderPanel.SetActive(false);
+        buttonPanel.SetActive(false);
+    }
+
+    public void InitializeQuestions()
     {
         LoadQuestionFiles();
         if (questionFiles.Count > 0)
-        {
             LoadAndDisplayQuestion(questionFiles[0]);
-        }
     }
 
     void LoadQuestionFiles()
     {
         string fullPath = Path.Combine(Application.streamingAssetsPath, dataFolder);
-
         if (!Directory.Exists(fullPath))
         {
             Debug.LogError($"Questions directory not found: {fullPath}");
             return;
         }
 
-        string[] files = Directory.GetFiles(fullPath, "*.json");
-        questionFiles = files.Select(f => Path.GetFileNameWithoutExtension(f)).ToList();
-        questionFiles.Sort();
-
-        Debug.Log($"Found {questionFiles.Count} question files");
+        questionFiles = Directory
+            .GetFiles(fullPath, "*.json")
+            .Select(f => Path.GetFileNameWithoutExtension(f))
+            .OrderBy(name => name)
+            .ToList();
     }
 
     public void LoadNextQuestion()
     {
         if (questionFiles.Count == 0) return;
-
         currentQuestionIndex = (currentQuestionIndex + 1) % questionFiles.Count;
         LoadAndDisplayQuestion(questionFiles[currentQuestionIndex]);
-        ResetInput();
     }
 
     void LoadAndDisplayQuestion(string fileName)
     {
-        // Load JSON
+        // Parse JSON
         string path = Path.Combine(Application.streamingAssetsPath, dataFolder, fileName + ".json");
         if (!File.Exists(path))
         {
             Debug.LogError($"File not found: {path}");
             return;
         }
-        string json = File.ReadAllText(path);
-        currentQuestionData = JsonUtility.FromJson<QuestionData>(json);
+        currentQuestionData = JsonUtility.FromJson<QuestionData>(File.ReadAllText(path));
         if (currentQuestionData == null)
         {
             Debug.LogError("JSON parse failed");
             return;
         }
 
-        // Display question text
+        // Update question text
         questionText.text = currentQuestionData.task.question;
 
-        // Clear previous UI elements
+        // Clear previous UI
         ClearInstantiatedElements();
 
-        // Set up appropriate input based on question type
+        // Show the right panel
         if (currentQuestionData.task.task_type == "VALUE_PART")
-        {
             SetupSlider();
-        }
         else if (currentQuestionData.task.task_type == "MIN_X")
-        {
-            SetupButtons();
-        }
+            SetupCarousel();
         else
-        {
-            Debug.LogWarning($"Unknown task type: {currentQuestionData.task.task_type}");
-            // Default to slider if unknown
-            SetupSlider();
-        }
+            Debug.LogError($"Unknown task type: {currentQuestionData.task.task_type}");
     }
 
     void SetupSlider()
     {
-        // Instantiate slider
-        instantiatedSlider = Instantiate(sliderPrefab, optionsPanel);
-        Transform valueTransform = instantiatedSlider.transform.Find("Value");
+        // Activate slider panel; deactivate carousel
+        sliderPanel.SetActive(true);
+        buttonPanel.SetActive(false);
+
+        // Instantiate and parent the slider
+        instantiatedSlider = Instantiate(sliderPrefab, sliderPanel.transform);
+
+        // Hook up the Value text
+        var valueTransform = instantiatedSlider.transform.Find("Value");
         if (valueTransform != null)
             valueText = valueTransform.GetComponent<TextMeshProUGUI>();
         else
-            Debug.LogWarning("Value text child not found on slider prefab");
+            Debug.LogWarning("Slider prefab missing child named 'Value'");
 
+
+        // Start in midpoint
+        float mid = (instantiatedSlider.minValue + instantiatedSlider.maxValue) * 0.5f;
+        instantiatedSlider.value = mid;
+        UpdateValueText(mid);
+
+        // Listen for changes
         instantiatedSlider.onValueChanged.AddListener(UpdateValueText);
-
-        // Configure slider
-        instantiatedSlider.minValue = 0;
-        instantiatedSlider.maxValue = 100;
-        instantiatedSlider.value = 50; // start at middle to avoid anchoring
-
-        UpdateValueText(instantiatedSlider.value);
-        instantiatedSlider.gameObject.SetActive(true);
     }
 
-    void SetupButtons()
+    void SetupCarousel()
     {
-        // For MIN_X questions, use x_labels as options if options array is not provided
-        string[] options = currentQuestionData.task.options;
-        if ((options == null || options.Length == 0) && currentQuestionData.x_labels != null)
-        {
-            options = currentQuestionData.x_labels;
-            Debug.Log($"Using x_labels as options, count: {options.Length}");
-        }
+        // Activate carousel; deactivate slider
+        buttonPanel.SetActive(true);
+        sliderPanel.SetActive(false);
 
-        if (options == null || options.Length == 0)
+        // Determine options array
+        string[] opts = currentQuestionData.task.options;
+        if ((opts == null || opts.Length == 0) && currentQuestionData.x_labels != null)
+            opts = currentQuestionData.x_labels;
+
+        if (opts == null || opts.Length == 0)
         {
-            Debug.LogError("No options found for MIN_X question");
+            Debug.LogError("No options available for carousel");
             return;
         }
 
-        // Create a container for grid layout
-        GameObject gridContainer = new GameObject("ButtonGrid");
-        gridContainer.transform.SetParent(optionsPanel, false);
-        RectTransform gridRect = gridContainer.AddComponent<RectTransform>();
-
-        // Add GridLayoutGroup
-        GridLayoutGroup gridLayout = gridContainer.AddComponent<GridLayoutGroup>();
-        gridLayout.cellSize = buttonSize;
-        gridLayout.spacing = new Vector2(buttonSpacing, buttonSpacing);
-        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        gridLayout.constraintCount = buttonsPerRow;
-        gridLayout.childAlignment = TextAnchor.MiddleCenter;
-
-        // Set grid size based on number of options
-        int optionCount = options.Length;
-        int rows = Mathf.CeilToInt((float)optionCount / buttonsPerRow);
-        float gridWidth = (buttonSize.x * buttonsPerRow) + (buttonSpacing * (buttonsPerRow - 1));
-        float gridHeight = (buttonSize.y * rows) + (buttonSpacing * (rows - 1));
-        gridRect.sizeDelta = new Vector2(gridWidth, gridHeight);
-
-        // Instantiate buttons
-        for (int i = 0; i < optionCount; i++)
+        // Initialize the existing GridControlledButtons on buttonPanel
+        var carousel = buttonPanel.GetComponent<GridControlledButtons>();
+        if (carousel == null)
         {
-            Button btn = Instantiate(buttonPrefab, gridContainer.transform);
-            int index = i; // Capture for lambda
-
-            // Set button text
-            TextMeshProUGUI btnText = btn.GetComponentInChildren<TextMeshProUGUI>();
-            if (btnText != null)
-            {
-                btnText.text = options[i];
-            }
-
-            // Add click listener
-            btn.onClick.AddListener(() => OnButtonClicked(index));
-
-            instantiatedButtons.Add(btn);
+            Debug.LogError("GridControlledButtons component missing on buttonPanel");
+            return;
         }
-    }
-
-    void OnButtonClicked(int index)
-    {
-        selectedOptionIndex = index;
-
-        // Get the actual option text
-        string selectedText = "";
-        if (currentQuestionData.task.options != null && index < currentQuestionData.task.options.Length)
-        {
-            selectedText = currentQuestionData.task.options[index];
-        }
-        else if (currentQuestionData.x_labels != null && index < currentQuestionData.x_labels.Length)
-        {
-            selectedText = currentQuestionData.x_labels[index];
-        }
-
-        Debug.Log($"Selected option {index}: {selectedText}");
-
-        // Visual feedback
-        for (int i = 0; i < instantiatedButtons.Count; i++)
-        {
-            ColorBlock colors = instantiatedButtons[i].colors;
-            if (i == index)
-            {
-                // Yellow color for selected button
-                colors.normalColor = new Color(1f, 0.92f, 0.016f); // Yellow
-                colors.highlightedColor = new Color(1f, 0.92f, 0.016f);
-                colors.pressedColor = new Color(0.8f, 0.74f, 0.01f); // Darker yellow
-                colors.selectedColor = new Color(1f, 0.92f, 0.016f);
-            }
-            else
-            {
-                // Grey color for unselected buttons
-                colors.normalColor = new Color(0.5f, 0.5f, 0.5f); // Grey
-                colors.highlightedColor = new Color(0.6f, 0.6f, 0.6f);
-                colors.pressedColor = new Color(0.4f, 0.4f, 0.4f);
-                colors.selectedColor = new Color(0.5f, 0.5f, 0.5f);
-            }
-            instantiatedButtons[i].colors = colors;
-        }
+        carousel.Initialize(opts, buttonPrefab);
     }
 
     void ClearInstantiatedElements()
     {
-        // Clear slider
+        // Destroy old slider
         if (instantiatedSlider != null)
         {
             Destroy(instantiatedSlider.gameObject);
@@ -233,80 +159,39 @@ public class QuestionDisplayManager : MonoBehaviour
             valueText = null;
         }
 
-        // Clear buttons and their container
-        if (instantiatedButtons.Count > 0)
-        {
-            // Destroy the grid container which will also destroy all buttons
-            if (instantiatedButtons[0] != null && instantiatedButtons[0].transform.parent != null)
-            {
-                Destroy(instantiatedButtons[0].transform.parent.gameObject);
-            }
-        }
-        instantiatedButtons.Clear();
-        selectedOptionIndex = -1;
+        // Clear carousel buttons
+        var carousel = buttonPanel.GetComponent<GridControlledButtons>();
+        if (carousel != null)
+            carousel.Clear();
     }
 
-    void ResetInput()
-    {
-        if (instantiatedSlider != null)
-        {
-            instantiatedSlider.value = 50;
-            UpdateValueText(instantiatedSlider.value);
-        }
-        selectedOptionIndex = -1;
-    }
 
-    private void UpdateValueText(float val)
+    void UpdateValueText(float val)
     {
         if (valueText != null)
-            valueText.text = $"{val:0}%";
+            valueText.text = $"{val:0}";
     }
 
+    // --- Public getters ---
+
     public float GetCurrentSliderValue()
-    {
-        if (instantiatedSlider != null)
-        {
-            return instantiatedSlider.value;
-        }
-        return -1f;
-    }
+        => instantiatedSlider != null ? instantiatedSlider.value : -1f;
 
     public int GetSelectedOptionIndex()
     {
-        return selectedOptionIndex;
+        var c = buttonPanel.GetComponent<GridControlledButtons>();
+        return c != null ? c.CurrentIndex : -1;
     }
 
     public string GetSelectedOptionText()
     {
-        if (selectedOptionIndex >= 0)
-        {
-            if (currentQuestionData.task.options != null && selectedOptionIndex < currentQuestionData.task.options.Length)
-            {
-                return currentQuestionData.task.options[selectedOptionIndex];
-            }
-            else if (currentQuestionData.x_labels != null && selectedOptionIndex < currentQuestionData.x_labels.Length)
-            {
-                return currentQuestionData.x_labels[selectedOptionIndex];
-            }
-        }
-        return "";
+        var c = buttonPanel.GetComponent<GridControlledButtons>();
+        return c != null ? c.CurrentText : "";
     }
 
     public string GetCurrentTaskType()
-    {
-        if (currentQuestionData != null && currentQuestionData.task != null)
-        {
-            return currentQuestionData.task.task_type;
-        }
-        return "";
-    }
+        => currentQuestionData?.task?.task_type ?? "";
 
     public string GetCorrectAnswer()
-    {
-        if (currentQuestionData != null && currentQuestionData.task != null)
-        {
-            return currentQuestionData.task.answer;
-        }
-        return "";
-    }
+        => currentQuestionData?.task?.answer ?? "";
 }
