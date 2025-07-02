@@ -9,6 +9,18 @@ public class StudyDataLogger : MonoBehaviour
     private List<ImageStudyRecord> studyRecords = new List<ImageStudyRecord>();
     private float currentImageStartTime;
 
+    [Header("Physics Tracking")]
+    [SerializeField]
+    private PhysiologicalTrackingManager trackingManager;
+
+    void Awake()
+    {
+        if (trackingManager == null)
+        {
+            trackingManager = FindObjectOfType<PhysiologicalTrackingManager>();
+        }
+    }
+
     public void StartImageTimer()
     {
         currentImageStartTime = Time.time;
@@ -26,7 +38,7 @@ public class StudyDataLogger : MonoBehaviour
     {
         if (studyRecords.Count == 0)
         {
-            Debug.LogWarning("[StudyDataLogger] No data to save");
+            Debug.LogWarning("[StudyDataLogger] No study data to save");
             return;
         }
 
@@ -34,22 +46,59 @@ public class StudyDataLogger : MonoBehaviour
         string filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         StringBuilder csv = new StringBuilder();
-        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,Timestamp");
 
+        // --- Performance Metrics ---
+        csv.AppendLine("### Performance Metrics ###");
+        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,Timestamp");
         foreach (var record in studyRecords)
         {
-            // Format slider value as empty string if it's -1 (for MIN_X questions)
             string sliderValueStr = record.sliderValue == -1 ? "" : $"{record.sliderValue:F0}";
-
             csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{record.timestamp}");
         }
 
+        // --- Physiological Tracking ---
+        if (trackingManager != null)
+        {
+            var allTracking = trackingManager.GetAllTrackingData();
+            if (allTracking.Count > 0)
+            {
+                csv.AppendLine();
+                csv.AppendLine("### Physiological Tracking ###");
+                csv.AppendLine("ImageIndex,Timestamp,TrackingSource,PosX,PosY,PosZ,DirX,DirY,DirZ,HitObject,IsValid");
+
+                foreach (var kvp in allTracking)
+                {
+                    int imageIdx = kvp.Key;
+                    foreach (var data in kvp.Value)
+                    {
+                        Vector3 pos = data.globalPosition;
+                        Vector3 dir = data.forwardVector;
+                        csv.AppendLine(
+                            $"{imageIdx}," +
+                            $"{data.timestamp:F3}," +
+                            $"{data.trackingSource}," +
+                            $"{pos.x:F4},{pos.y:F4},{pos.z:F4}," +
+                            $"{dir.x:F4},{dir.y:F4},{dir.z:F4}," +
+                            $"{data.hitObjectName}," +
+                            $"{data.isValid}"
+                        );
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[StudyDataLogger] No PhysiologicalTrackingManager assigned — skipping tracking data");
+        }
+
+        // Write out and finish
         File.WriteAllText(filePath, csv.ToString());
-        Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
+        Debug.Log($"[StudyDataLogger] Combined data saved to: {filePath}");
     }
 
     public void ClearData()
     {
         studyRecords.Clear();
+        Debug.Log("[StudyDataLogger] Cleared study records");
     }
 }
