@@ -182,6 +182,11 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     public int GetCurrentImageIndex() => currentImageIndex;
 
+    public int GetLoadedImagesCount()
+    {
+        return loadedImages.Count;
+    }
+
     // private void Update()
     // {
     //     if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))

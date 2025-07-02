@@ -97,12 +97,19 @@ public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerEx
             );
         }
 
+        // Check if this is the last image before advancing
+        bool isLastImage = false;
+        if (imageViewer != null)
+        {
+            isLastImage = imageViewer.GetCurrentImageIndex() >= imageViewer.GetLoadedImagesCount() - 1;
+        }
+
         // Advance image
         if (imageViewer != null)
         {
             imageViewer.NextImage();
-            // Start timer for next image
-            if (dataLogger != null)
+            // Start timer for next image (only if not the last one)
+            if (dataLogger != null && !isLastImage)
             {
                 dataLogger.StartImageTimer();
             }
@@ -112,14 +119,10 @@ public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerEx
             Debug.LogError("[ImageClickHandler] Cannot advance - ImageViewerController is null!");
         }
 
-        // Advance question and reset slider
-        if (questionManager != null)
+        // Only advance question if we haven't ended the study
+        if (!isLastImage && questionManager != null)
         {
             questionManager.LoadNextQuestion();
-        }
-        else
-        {
-            Debug.LogError("[ImageClickHandler] Cannot advance question - QuestionDisplayManager is null!");
         }
     }
 }
