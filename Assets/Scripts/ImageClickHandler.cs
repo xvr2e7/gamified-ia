@@ -1,9 +1,9 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(RawImage))]
-public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class ImageClickHandler : MonoBehaviour
 {
     [Header("References")]
     public StudyDataLogger dataLogger;
@@ -14,7 +14,12 @@ public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerEx
     public Color normalColor = Color.white;
     public Color hoverColor = new Color(0.9f, 0.9f, 0.9f);
 
+    [Header("Trigger Input")]
+    [SerializeField] private InputActionReference leftTriggerAction;
+    [SerializeField] private InputActionReference rightTriggerAction;
+
     private RawImage rawImage;
+    private bool triggerWasPressed = false;
 
     void Start()
     {
@@ -31,27 +36,34 @@ public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerEx
             imageViewer = FindObjectOfType<ImageViewerController>();
         if (questionManager == null)
             questionManager = FindObjectOfType<QuestionDisplayManager>();
+
+        // Enable input actions
+        if (leftTriggerAction != null)
+            leftTriggerAction.action.Enable();
+        if (rightTriggerAction != null)
+            rightTriggerAction.action.Enable();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    void Update()
     {
-        HandleClick();
-    }
+        // Check if we should process input
+        if (imageViewer == null || !gameObject.activeInHierarchy)
+            return;
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (rawImage != null)
+        // Read trigger values
+        float leftTrigger = leftTriggerAction != null ? leftTriggerAction.action.ReadValue<float>() : 0f;
+        float rightTrigger = rightTriggerAction != null ? rightTriggerAction.action.ReadValue<float>() : 0f;
+
+        // Check if either trigger is pressed (threshold of 0.5)
+        bool triggerPressed = leftTrigger > 0.5f || rightTrigger > 0.5f;
+
+        // Detect trigger press (not hold) - only fires once per press
+        if (triggerPressed && !triggerWasPressed)
         {
-            rawImage.color = hoverColor;
+            HandleClick();
         }
-    }
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (rawImage != null)
-        {
-            rawImage.color = normalColor;
-        }
+        triggerWasPressed = triggerPressed;
     }
 
     private void HandleClick()
@@ -124,5 +136,14 @@ public class ImageClickHandler : MonoBehaviour, IPointerEnterHandler, IPointerEx
         {
             questionManager.LoadNextQuestion();
         }
+    }
+
+    void OnDestroy()
+    {
+        // Disable input actions
+        if (leftTriggerAction != null)
+            leftTriggerAction.action.Disable();
+        if (rightTriggerAction != null)
+            rightTriggerAction.action.Disable();
     }
 }

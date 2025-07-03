@@ -131,6 +131,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1773366280271006027}
     m_Modifications:
+    - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: imageViewer
+      value: 
+      objectReference: {fileID: 1968499957954680197}
+    - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: questionManager
+      value: 
+      objectReference: {fileID: 8687018907506144345}
+    - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: leftTriggerAction
+      value: 
+      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+    - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: rightTriggerAction
+      value: 
+      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: buttonPanel
       value: 
@@ -147,6 +163,14 @@ PrefabInstance:
       propertyPath: questionManager
       value: 
       objectReference: {fileID: 8687018907506144345}
+    - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: leftTriggerAction
+      value: 
+      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+    - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: rightTriggerAction
+      value: 
+      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
     - target: {fileID: 1946991843477704966, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: m_Name
       value: ImageViewer
@@ -196,6 +220,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+--- !u!114 &1968499957954680197 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+  m_PrefabInstance: {fileID: 2297145856848130595}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4f176c5cb484bae8187f8c7d2d1dd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &6866490229911149917 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4660017833910611838, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}

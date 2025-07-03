@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -27,12 +28,17 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
 
+    [Header("Trigger Input")]
+    [SerializeField] private InputActionReference leftTriggerAction;
+    [SerializeField] private InputActionReference rightTriggerAction;
+
     [SerializeField] private QuestionDisplayManager questionManager;
 
     private List<Texture2D> loadedImages = new List<Texture2D>();
     private int currentImageIndex = 0;
     private StudyDataLogger dataLogger;
     private Image openingPanelImage;
+    private bool triggerWasPressed = false;
 
     private void Awake()
     {
@@ -59,6 +65,34 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         questionPanel.SetActive(false);
 
         LoadImages();
+
+        // Enable input actions
+        if (leftTriggerAction != null)
+            leftTriggerAction.action.Enable();
+        if (rightTriggerAction != null)
+            rightTriggerAction.action.Enable();
+    }
+
+    void Update()
+    {
+        // Handle trigger input for opening panel
+        if (openingPanel != null && openingPanel.activeSelf)
+        {
+            // Read trigger values
+            float leftTrigger = leftTriggerAction != null ? leftTriggerAction.action.ReadValue<float>() : 0f;
+            float rightTrigger = rightTriggerAction != null ? rightTriggerAction.action.ReadValue<float>() : 0f;
+
+            // Check if either trigger is pressed (threshold of 0.5)
+            bool triggerPressed = leftTrigger > 0.5f || rightTrigger > 0.5f;
+
+            // Detect trigger press (not hold) - only fires once per press
+            if (triggerPressed && !triggerWasPressed)
+            {
+                StartStudy();
+            }
+
+            triggerWasPressed = triggerPressed;
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -187,6 +221,11 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         return loadedImages.Count;
     }
 
+    public bool IsOpeningPanelActive()
+    {
+        return openingPanel != null && openingPanel.activeSelf;
+    }
+
     // private void Update()
     // {
     //     if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
@@ -195,6 +234,12 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void OnDestroy()
     {
+        // Disable input actions
+        if (leftTriggerAction != null)
+            leftTriggerAction.action.Disable();
+        if (rightTriggerAction != null)
+            rightTriggerAction.action.Disable();
+
         foreach (var t in loadedImages)
             if (t) Destroy(t);
         loadedImages.Clear();
