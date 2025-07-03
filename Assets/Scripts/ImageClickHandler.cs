@@ -20,6 +20,8 @@ public class ImageClickHandler : MonoBehaviour
 
     private RawImage rawImage;
     private bool triggerWasPressed = false;
+    private float activationTime = 0f;
+    private const float STARTUP_DELAY = 0.5f; // Half second delay after activation
 
     void Start()
     {
@@ -44,10 +46,21 @@ public class ImageClickHandler : MonoBehaviour
             rightTriggerAction.action.Enable();
     }
 
+    void OnEnable()
+    {
+        // Record when this component became active
+        activationTime = Time.time;
+        triggerWasPressed = true; // Assume trigger is pressed on enable to prevent immediate action
+    }
+
     void Update()
     {
         // Check if we should process input
         if (imageViewer == null || !gameObject.activeInHierarchy)
+            return;
+
+        // Don't process input for a short time after activation
+        if (Time.time - activationTime < STARTUP_DELAY)
             return;
 
         // Read trigger values

@@ -142,11 +142,11 @@ PrefabInstance:
     - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: leftTriggerAction
       value: 
-      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+      objectReference: {fileID: -5982496924579745919, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     - target: {fileID: 67739545494938288, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: rightTriggerAction
       value: 
-      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+      objectReference: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: buttonPanel
       value: 
@@ -166,11 +166,11 @@ PrefabInstance:
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: leftTriggerAction
       value: 
-      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+      objectReference: {fileID: -5982496924579745919, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: rightTriggerAction
       value: 
-      objectReference: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
+      objectReference: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     - target: {fileID: 1946991843477704966, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: m_Name
       value: ImageViewer

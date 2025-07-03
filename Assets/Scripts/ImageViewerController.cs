@@ -128,6 +128,9 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
             DisplayCurrentImage();
             dataLogger.StartImageTimer();
         }
+
+        // Reset the trigger state to prevent immediate advancement
+        triggerWasPressed = true;
     }
 
     private void LoadImages()
