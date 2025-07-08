@@ -1,31 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using VIVE.OpenXR;
 using VIVE.OpenXR.EyeTracker;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation;
-
-[Serializable]
-public class PhysiologicalTrackingData
-{
-    public float timestamp;
-    public string trackingSource;
-    public Vector3 globalPosition;
-    public Vector3 forwardVector;
-    public string hitObjectName;
-    public bool isValid;
-
-    public PhysiologicalTrackingData(float time, string source, Vector3 pos, Vector3 forward, string hitObject, bool valid = true)
-    {
-        timestamp = time;
-        trackingSource = source;
-        globalPosition = pos;
-        forwardVector = forward;
-        hitObjectName = hitObject;
-        isValid = valid;
-    }
-}
 
 public class PhysiologicalTrackingManager : MonoBehaviour
 {
@@ -45,7 +23,7 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     [Header("Simulator Settings")]
     [SerializeField] private bool forceSimulatorMode = false;
 
-    // Tracking data
+    // Tracking data storage
     private Dictionary<int, List<PhysiologicalTrackingData>> imageTrackingData = new Dictionary<int, List<PhysiologicalTrackingData>>();
     private List<PhysiologicalTrackingData> currentImageData = new List<PhysiologicalTrackingData>();
     private int currentImageIndex = -1;
@@ -59,7 +37,7 @@ public class PhysiologicalTrackingManager : MonoBehaviour
 
     void Start()
     {
-        // Auto-find references
+        // Auto-find references if not assigned
         if (xrOrigin == null)
         {
             var xrOriginGO = GameObject.Find("XR Origin");
@@ -70,7 +48,7 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        // Auto-find ray interactors
+        // Auto-find ray interactors if not assigned
         if (leftRayInteractor == null || rightRayInteractor == null)
         {
             var rayInteractors = FindObjectsOfType<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
@@ -96,29 +74,29 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         useSimulator = false;
 #endif
 
-        if (!useSimulator)
+        if (useSimulator)
         {
-            try
-            {
-                // Attempt to get eye gaze data to verify availability
-                XrSingleEyeGazeDataHTC[] gazeData;
-                XR_HTC_eye_tracker.Interop.GetEyeGazeData(out gazeData);
-                eyeTrackingAvailable = gazeData != null && gazeData.Length >= 2;
-
-                if (eyeTrackingAvailable)
-                    Debug.Log("[PhysiologicalTracking] VIVE Eye tracking available");
-                else
-                    Debug.LogWarning("[PhysiologicalTracking] Eye tracking data invalid or incomplete");
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[PhysiologicalTracking] Eye tracking not available: {e.Message}");
-                eyeTrackingAvailable = false;
-            }
+            Debug.Log("[PhysiologicalTracking] Using simulator mode - eye tracking disabled");
+            eyeTrackingAvailable = false;
+            return;
         }
-        else
+
+        // Test eye tracking availability
+        try
         {
-            Debug.Log("[PhysiologicalTracking] Using simulator mode");
+            XrSingleEyeGazeDataHTC[] gazeData;
+            XR_HTC_eye_tracker.Interop.GetEyeGazeData(out gazeData);
+            eyeTrackingAvailable = gazeData != null && gazeData.Length >= 2;
+
+            if (eyeTrackingAvailable)
+                Debug.Log("[PhysiologicalTracking] HTC Vive eye tracking available");
+            else
+                Debug.LogWarning("[PhysiologicalTracking] HTC Vive eye tracking not available");
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[PhysiologicalTracking] Eye tracking initialization failed: {e.Message}");
+            eyeTrackingAvailable = false;
         }
     }
 
@@ -158,11 +136,11 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     {
         float currentTime = Time.time;
 
-        if (useSimulator)
-            CollectSimulatedEyeTracking(currentTime);
-        else if (eyeTrackingAvailable)
-            CollectViveEyeTracking(currentTime);
+        // Only collect eye tracking if not using simulator
+        if (!useSimulator && eyeTrackingAvailable)
+            CollectEyeTrackingData(currentTime);
 
+        // Always collect head and hand tracking
         CollectHeadTracking(currentTime);
 
         if (leftRayInteractor != null)
@@ -172,29 +150,11 @@ public class PhysiologicalTrackingManager : MonoBehaviour
             CollectRayInteractorData(rightRayInteractor, "RightHand", currentTime);
     }
 
-    void CollectSimulatedEyeTracking(float timestamp)
-    {
-        if (Mouse.current == null) return;
-
-        Vector3 mousePosition = Mouse.current.position.ReadValue();
-        Ray gazeRay = mainCamera.ScreenPointToRay(mousePosition);
-
-        string hitObjectName = PerformRaycast(gazeRay.origin, gazeRay.direction);
-
-        currentImageData.Add(new PhysiologicalTrackingData(
-            timestamp,
-            "Eyes_Simulated",
-            gazeRay.origin,
-            gazeRay.direction,
-            hitObjectName,
-            true
-        ));
-    }
-
-    void CollectViveEyeTracking(float timestamp)
+    void CollectEyeTrackingData(float timestamp)
     {
         try
         {
+            // Get gaze data
             XrSingleEyeGazeDataHTC[] gazeData;
             XR_HTC_eye_tracker.Interop.GetEyeGazeData(out gazeData);
 
@@ -202,6 +162,27 @@ public class PhysiologicalTrackingManager : MonoBehaviour
             var rightGaze = gazeData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
             bool validGaze = leftGaze.isValid && rightGaze.isValid;
 
+            // Create tracking data entry
+            var trackingData = new PhysiologicalTrackingData(
+                timestamp,
+                "Eyes",
+                Vector3.zero,  // Will be calculated below
+                Vector3.zero,  // Will be calculated below
+                "None",        // Will be calculated below
+                validGaze
+            );
+
+            // Populate left eye data
+            PopulateEyeGazeData(ref trackingData.leftEye, leftGaze);
+            CollectEyePupilData(ref trackingData.leftEye, XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC);
+            CollectEyeGeometryData(ref trackingData.leftEye, XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC);
+
+            // Populate right eye data
+            PopulateEyeGazeData(ref trackingData.rightEye, rightGaze);
+            CollectEyePupilData(ref trackingData.rightEye, XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC);
+            CollectEyeGeometryData(ref trackingData.rightEye, XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC);
+
+            // Calculate combined gaze for raycast
             if (validGaze)
             {
                 Vector3 leftLocal = leftGaze.gazePose.position.ToUnityVector();
@@ -214,28 +195,12 @@ public class PhysiologicalTrackingManager : MonoBehaviour
                 Quaternion gazeRotation = Quaternion.Slerp(leftQuat, rightQuat, 0.5f);
                 Vector3 gazeDirection = gazeRotation * Vector3.forward;
 
-                string hitObjectName = PerformRaycast(gazeOrigin, gazeDirection);
+                trackingData.globalPosition = gazeOrigin;
+                trackingData.forwardVector = gazeDirection;
+                trackingData.hitObjectName = PerformRaycast(gazeOrigin, gazeDirection);
+            }
 
-                currentImageData.Add(new PhysiologicalTrackingData(
-                    timestamp,
-                    "Eyes",
-                    gazeOrigin,
-                    gazeDirection,
-                    hitObjectName,
-                    true
-                ));
-            }
-            else
-            {
-                currentImageData.Add(new PhysiologicalTrackingData(
-                    timestamp,
-                    "Eyes",
-                    Vector3.zero,
-                    Vector3.zero,
-                    "Invalid",
-                    false
-                ));
-            }
+            currentImageData.Add(trackingData);
         }
         catch (Exception e)
         {
@@ -243,8 +208,67 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         }
     }
 
+    void PopulateEyeGazeData(ref EyeData eyeData, XrSingleEyeGazeDataHTC gazeData)
+    {
+        eyeData.gazeValid = gazeData.isValid;
+        if (gazeData.isValid)
+        {
+            eyeData.gazeLocalPosition = gazeData.gazePose.position.ToUnityVector();
+            eyeData.gazeLocalRotation = gazeData.gazePose.orientation.ToUnityQuaternion();
+            eyeData.gazeWorldPosition = mainCamera.transform.TransformPoint(eyeData.gazeLocalPosition);
+            eyeData.gazeWorldRotation = mainCamera.transform.rotation * eyeData.gazeLocalRotation;
+        }
+    }
+
+    void CollectEyePupilData(ref EyeData eyeData, XrEyePositionHTC eyePosition)
+    {
+        try
+        {
+            XrSingleEyePupilDataHTC[] pupilData;
+            XR_HTC_eye_tracker.Interop.GetEyePupilData(out pupilData);
+            var pupil = pupilData[(int)eyePosition];
+
+            eyeData.pupilDiameterValid = pupil.isDiameterValid;
+            eyeData.pupilPositionValid = pupil.isPositionValid;
+
+            if (pupil.isDiameterValid)
+                eyeData.pupilDiameter = pupil.pupilDiameter;
+
+            if (pupil.isPositionValid)
+                eyeData.pupilPosition = new Vector2(pupil.pupilPosition.x, pupil.pupilPosition.y);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[PhysiologicalTracking] Pupil data collection failed: {e.Message}");
+        }
+    }
+
+    void CollectEyeGeometryData(ref EyeData eyeData, XrEyePositionHTC eyePosition)
+    {
+        try
+        {
+            XrSingleEyeGeometricDataHTC[] geometryData;
+            XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out geometryData);
+            var geometry = geometryData[(int)eyePosition];
+
+            eyeData.geometryValid = geometry.isValid;
+            if (geometry.isValid)
+            {
+                eyeData.eyeOpenness = geometry.eyeOpenness;
+                eyeData.eyeSqueeze = geometry.eyeSqueeze;
+                eyeData.eyeWide = geometry.eyeWide;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[PhysiologicalTracking] Eye geometry data collection failed: {e.Message}");
+        }
+    }
+
     void CollectHeadTracking(float timestamp)
     {
+        if (mainCamera == null) return;
+
         string hitObjectName = PerformRaycast(mainCamera.transform.position, mainCamera.transform.forward);
 
         currentImageData.Add(new PhysiologicalTrackingData(
@@ -257,35 +281,47 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         ));
     }
 
-    void CollectRayInteractorData(UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rayInteractor, string sourceName, float timestamp)
+    void CollectRayInteractorData(UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rayInteractor, string handName, float timestamp)
     {
-        string hitObjectName = "None";
+        if (rayInteractor == null) return;
 
-        if (rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
-            hitObjectName = hit.collider.gameObject.name;
+        Transform rayOrigin = rayInteractor.rayOriginTransform;
+        Vector3 rayDirection = rayOrigin.forward;
+        string hitObjectName = PerformRaycast(rayOrigin.position, rayDirection);
 
         currentImageData.Add(new PhysiologicalTrackingData(
             timestamp,
-            sourceName,
-            rayInteractor.transform.position,
-            rayInteractor.transform.forward,
+            handName,
+            rayOrigin.position,
+            rayDirection,
             hitObjectName,
-            true
+            rayInteractor.enabled
         ));
     }
 
     string PerformRaycast(Vector3 origin, Vector3 direction)
     {
         if (Physics.Raycast(origin, direction, out RaycastHit hit, maxRayDistance, raycastLayers))
+        {
             return hit.collider.gameObject.name;
+        }
         return "None";
     }
 
+    // Public interface methods
     public Dictionary<int, List<PhysiologicalTrackingData>> GetAllTrackingData()
     {
         if (currentImageIndex >= 0 && currentImageData.Count > 0)
             imageTrackingData[currentImageIndex] = new List<PhysiologicalTrackingData>(currentImageData);
+
         return imageTrackingData;
+    }
+
+    public List<PhysiologicalTrackingData> GetTrackingDataForImage(int imageIndex)
+    {
+        if (imageTrackingData.ContainsKey(imageIndex))
+            return imageTrackingData[imageIndex];
+        return new List<PhysiologicalTrackingData>();
     }
 
     public void ClearAllData()
@@ -293,5 +329,6 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         imageTrackingData.Clear();
         currentImageData.Clear();
         currentImageIndex = -1;
+        Debug.Log("[PhysiologicalTracking] All tracking data cleared");
     }
 }
