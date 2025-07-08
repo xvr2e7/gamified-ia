@@ -11,7 +11,7 @@ public class StudyDataLogger : MonoBehaviour
 
     [Header("Physics Tracking")]
     [SerializeField]
-    private PhysiologicalTrackingManager trackingManager;
+    public PhysiologicalTrackingManager trackingManager;
 
     void Awake()
     {
@@ -64,26 +64,8 @@ public class StudyDataLogger : MonoBehaviour
             {
                 csv.AppendLine();
                 csv.AppendLine("### Physiological Tracking ###");
-                csv.AppendLine("ImageIndex,Timestamp,TrackingSource,PosX,PosY,PosZ,DirX,DirY,DirZ,HitObject,IsValid");
-
-                foreach (var kvp in allTracking)
-                {
-                    int imageIdx = kvp.Key;
-                    foreach (var data in kvp.Value)
-                    {
-                        Vector3 pos = data.globalPosition;
-                        Vector3 dir = data.forwardVector;
-                        csv.AppendLine(
-                            $"{imageIdx}," +
-                            $"{data.timestamp:F3}," +
-                            $"{data.trackingSource}," +
-                            $"{pos.x:F4},{pos.y:F4},{pos.z:F4}," +
-                            $"{dir.x:F4},{dir.y:F4},{dir.z:F4}," +
-                            $"{data.hitObjectName}," +
-                            $"{data.isValid}"
-                        );
-                    }
-                }
+                WriteTrackingHeader(csv);
+                WriteTrackingData(csv, allTracking);
             }
         }
         else
@@ -93,7 +75,133 @@ public class StudyDataLogger : MonoBehaviour
 
         // Write out and finish
         File.WriteAllText(filePath, csv.ToString());
-        Debug.Log($"[StudyDataLogger] Combined data saved to: {filePath}");
+        Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
+    }
+
+    void WriteTrackingHeader(StringBuilder csv)
+    {
+        var headers = new List<string>
+        {
+            // Basic tracking data
+            "ImageIndex", "Timestamp", "TrackingSource", "PosX", "PosY", "PosZ",
+            "DirX", "DirY", "DirZ", "HitObject", "IsValid",
+            
+            // Left eye gaze data
+            "LeftGaze_Valid", "LeftGaze_LocalPosX", "LeftGaze_LocalPosY", "LeftGaze_LocalPosZ",
+            "LeftGaze_WorldPosX", "LeftGaze_WorldPosY", "LeftGaze_WorldPosZ",
+            "LeftGaze_LocalRotX", "LeftGaze_LocalRotY", "LeftGaze_LocalRotZ", "LeftGaze_LocalRotW",
+            "LeftGaze_WorldRotX", "LeftGaze_WorldRotY", "LeftGaze_WorldRotZ", "LeftGaze_WorldRotW",
+            
+            // Right eye gaze data
+            "RightGaze_Valid", "RightGaze_LocalPosX", "RightGaze_LocalPosY", "RightGaze_LocalPosZ",
+            "RightGaze_WorldPosX", "RightGaze_WorldPosY", "RightGaze_WorldPosZ",
+            "RightGaze_LocalRotX", "RightGaze_LocalRotY", "RightGaze_LocalRotZ", "RightGaze_LocalRotW",
+            "RightGaze_WorldRotX", "RightGaze_WorldRotY", "RightGaze_WorldRotZ", "RightGaze_WorldRotW",
+            
+            // Left eye pupil data
+            "LeftPupil_DiameterValid", "LeftPupil_Diameter", "LeftPupil_PositionValid",
+            "LeftPupil_PosX", "LeftPupil_PosY",
+            
+            // Right eye pupil data
+            "RightPupil_DiameterValid", "RightPupil_Diameter", "RightPupil_PositionValid",
+            "RightPupil_PosX", "RightPupil_PosY",
+            
+            // Left eye geometry data
+            "LeftEye_GeometryValid", "LeftEye_Openness", "LeftEye_Squeeze", "LeftEye_Wide",
+            
+            // Right eye geometry data
+            "RightEye_GeometryValid", "RightEye_Openness", "RightEye_Squeeze", "RightEye_Wide"
+        };
+
+        csv.AppendLine(string.Join(",", headers));
+    }
+
+    void WriteTrackingData(StringBuilder csv, Dictionary<int, List<PhysiologicalTrackingData>> allTracking)
+    {
+        foreach (var kvp in allTracking)
+        {
+            int imageIdx = kvp.Key;
+            foreach (var data in kvp.Value)
+            {
+                var values = new List<string>();
+
+                // Basic tracking data
+                Vector3 pos = data.globalPosition;
+                Vector3 dir = data.forwardVector;
+                values.AddRange(new string[]
+                {
+                    imageIdx.ToString(),
+                    data.timestamp.ToString("F3"),
+                    data.trackingSource,
+                    pos.x.ToString("F4"), pos.y.ToString("F4"), pos.z.ToString("F4"),
+                    dir.x.ToString("F4"), dir.y.ToString("F4"), dir.z.ToString("F4"),
+                    data.hitObjectName,
+                    data.isValid.ToString()
+                });
+
+                // Left eye gaze data
+                var leftEye = data.leftEye;
+                values.AddRange(new string[]
+                {
+                    leftEye.gazeValid.ToString(),
+                    leftEye.gazeLocalPosition.x.ToString("F6"), leftEye.gazeLocalPosition.y.ToString("F6"), leftEye.gazeLocalPosition.z.ToString("F6"),
+                    leftEye.gazeWorldPosition.x.ToString("F6"), leftEye.gazeWorldPosition.y.ToString("F6"), leftEye.gazeWorldPosition.z.ToString("F6"),
+                    leftEye.gazeLocalRotation.x.ToString("F6"), leftEye.gazeLocalRotation.y.ToString("F6"), leftEye.gazeLocalRotation.z.ToString("F6"), leftEye.gazeLocalRotation.w.ToString("F6"),
+                    leftEye.gazeWorldRotation.x.ToString("F6"), leftEye.gazeWorldRotation.y.ToString("F6"), leftEye.gazeWorldRotation.z.ToString("F6"), leftEye.gazeWorldRotation.w.ToString("F6")
+                });
+
+                // Right eye gaze data
+                var rightEye = data.rightEye;
+                values.AddRange(new string[]
+                {
+                    rightEye.gazeValid.ToString(),
+                    rightEye.gazeLocalPosition.x.ToString("F6"), rightEye.gazeLocalPosition.y.ToString("F6"), rightEye.gazeLocalPosition.z.ToString("F6"),
+                    rightEye.gazeWorldPosition.x.ToString("F6"), rightEye.gazeWorldPosition.y.ToString("F6"), rightEye.gazeWorldPosition.z.ToString("F6"),
+                    rightEye.gazeLocalRotation.x.ToString("F6"), rightEye.gazeLocalRotation.y.ToString("F6"), rightEye.gazeLocalRotation.z.ToString("F6"), rightEye.gazeLocalRotation.w.ToString("F6"),
+                    rightEye.gazeWorldRotation.x.ToString("F6"), rightEye.gazeWorldRotation.y.ToString("F6"), rightEye.gazeWorldRotation.z.ToString("F6"), rightEye.gazeWorldRotation.w.ToString("F6")
+                });
+
+                // Left eye pupil data
+                values.AddRange(new string[]
+                {
+                    leftEye.pupilDiameterValid.ToString(),
+                    leftEye.pupilDiameter.ToString("F4"),
+                    leftEye.pupilPositionValid.ToString(),
+                    leftEye.pupilPosition.x.ToString("F6"),
+                    leftEye.pupilPosition.y.ToString("F6")
+                });
+
+                // Right eye pupil data
+                values.AddRange(new string[]
+                {
+                    rightEye.pupilDiameterValid.ToString(),
+                    rightEye.pupilDiameter.ToString("F4"),
+                    rightEye.pupilPositionValid.ToString(),
+                    rightEye.pupilPosition.x.ToString("F6"),
+                    rightEye.pupilPosition.y.ToString("F6")
+                });
+
+                // Left eye geometry data
+                values.AddRange(new string[]
+                {
+                    leftEye.geometryValid.ToString(),
+                    leftEye.eyeOpenness.ToString("F4"),
+                    leftEye.eyeSqueeze.ToString("F4"),
+                    leftEye.eyeWide.ToString("F4")
+                });
+
+                // Right eye geometry data
+                values.AddRange(new string[]
+                {
+                    rightEye.geometryValid.ToString(),
+                    rightEye.eyeOpenness.ToString("F4"),
+                    rightEye.eyeSqueeze.ToString("F4"),
+                    rightEye.eyeWide.ToString("F4")
+                });
+
+                csv.AppendLine(string.Join(",", values));
+            }
+        }
     }
 
     public void ClearData()

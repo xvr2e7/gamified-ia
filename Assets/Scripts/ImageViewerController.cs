@@ -127,6 +127,9 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
             currentImageIndex = 0;
             DisplayCurrentImage();
             dataLogger.StartImageTimer();
+
+            if (dataLogger != null && dataLogger.trackingManager != null)
+                dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
         }
 
         // Reset the trigger state to prevent immediate advancement
@@ -178,6 +181,10 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     public void NextImage()
     {
+        // Stop tracking current image:
+        if (dataLogger != null && dataLogger.trackingManager != null)
+            dataLogger.trackingManager.StopTracking();
+
         if (++currentImageIndex >= loadedImages.Count)
         {
             EndStudy();
@@ -186,6 +193,10 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
         DisplayCurrentImage();
         dataLogger.StartImageTimer();
+
+        // Start tracking new image:
+        if (dataLogger != null && dataLogger.trackingManager != null)
+            dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
     }
 
     public void PreviousImage()
@@ -197,6 +208,10 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void EndStudy()
     {
+        // Stop tracking final image:
+        if (dataLogger != null && dataLogger.trackingManager != null)
+            dataLogger.trackingManager.StopTracking();
+
         dataLogger.SaveToFile();
 
         displayImage.gameObject.SetActive(false);
