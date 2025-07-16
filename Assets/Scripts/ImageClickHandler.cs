@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(RawImage))]
 public class ImageClickHandler : MonoBehaviour
 {
+    [SerializeField] private float sliderError = 5f;
+
     [Header("References")]
     public StudyDataLogger dataLogger;
     public ImageViewerController imageViewer;
@@ -120,6 +122,31 @@ public class ImageClickHandler : MonoBehaviour
                 taskType,
                 correctAnswer
             );
+        }
+
+        // Check if answer is correct and award XP
+        bool isCorrect = false;
+
+        if (taskType == "VALUE_PART" && !string.IsNullOrEmpty(correctAnswer))
+        {
+            // For slider questions, check if the slider value matches the correct answer
+            float correctValue;
+            if (float.TryParse(correctAnswer, out correctValue))
+            {
+                // Allow some tolerance for float comparison
+                isCorrect = Mathf.Abs(sliderValue - correctValue) < sliderError;
+            }
+        }
+        else if (taskType == "MIN_X" && !string.IsNullOrEmpty(selectedOption))
+        {
+            // For multiple choice questions, check if selected option matches correct answer
+            isCorrect = selectedOption == correctAnswer;
+        }
+
+        // Award XP if answer is correct
+        if (isCorrect && XPManager.Instance != null)
+        {
+            XPManager.Instance.AddXPForCorrectAnswer();
         }
 
         // Check if this is the last image before advancing

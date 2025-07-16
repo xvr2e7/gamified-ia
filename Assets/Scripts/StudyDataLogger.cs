@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using System.Text;
+using System.Linq;
 
 public class StudyDataLogger : MonoBehaviour
 {
@@ -42,18 +43,49 @@ public class StudyDataLogger : MonoBehaviour
             return;
         }
 
+        // Get final XP score
+        int finalXP = 0;
+        if (XPManager.Instance != null)
+        {
+            finalXP = XPManager.Instance.GetCurrentXP();
+        }
+
         string fileName = $"StudyData_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
         string filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         StringBuilder csv = new StringBuilder();
 
+        // --- Study Summary ---
+        csv.AppendLine("### Study Summary ###");
+        csv.AppendLine($"Total Images Viewed,{studyRecords.Count}");
+        csv.AppendLine($"Total Time (seconds),{studyRecords.Sum(r => r.timeSpent):F2}");
+        csv.AppendLine($"Final XP Score,{finalXP}");
+        csv.AppendLine();
+
         // --- Performance Metrics ---
         csv.AppendLine("### Performance Metrics ###");
-        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,Timestamp");
+        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,IsCorrect,Timestamp");
+
         foreach (var record in studyRecords)
         {
             string sliderValueStr = record.sliderValue == -1 ? "" : $"{record.sliderValue:F0}";
-            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{record.timestamp}");
+
+            // Determine if answer was correct
+            bool isCorrect = false;
+            if (record.taskType == "VALUE_PART" && !string.IsNullOrEmpty(record.correctAnswer))
+            {
+                float correctValue;
+                if (float.TryParse(record.correctAnswer, out correctValue))
+                {
+                    isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 0.1f;
+                }
+            }
+            else if (record.taskType == "MIN_X" && !string.IsNullOrEmpty(record.selectedOption))
+            {
+                isCorrect = record.selectedOption == record.correctAnswer;
+            }
+
+            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{isCorrect},{record.timestamp}");
         }
 
         // --- Physiological Tracking ---
@@ -76,6 +108,7 @@ public class StudyDataLogger : MonoBehaviour
         // Write out and finish
         File.WriteAllText(filePath, csv.ToString());
         Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
+        Debug.Log($"[StudyDataLogger] Final XP Score: {finalXP}");
     }
 
     void WriteTrackingHeader(StringBuilder csv)

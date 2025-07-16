@@ -122,6 +122,12 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
         questionManager.InitializeQuestions();
 
+        // Start XP counting
+        if (XPManager.Instance != null)
+        {
+            XPManager.Instance.StartCounting();
+        }
+
         if (loadedImages.Count > 0)
         {
             currentImageIndex = 0;
@@ -208,6 +214,12 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void EndStudy()
     {
+        // Stop XP counting
+        if (XPManager.Instance != null)
+        {
+            XPManager.Instance.StopCounting();
+        }
+
         // Stop tracking final image:
         if (dataLogger != null && dataLogger.trackingManager != null)
             dataLogger.trackingManager.StopTracking();
