@@ -63,7 +63,11 @@ public class XPManager : MonoBehaviour
             if (timer >= 1f)
             {
                 timer -= 1f;
-                AddXP(xpPerSecond);
+
+                // Apply streak multiplier to XP per second
+                float multiplier = StreakMultiplier.Instance != null ? StreakMultiplier.Instance.GetXPMultiplier() : 1f;
+                int multipliedXP = Mathf.RoundToInt(xpPerSecond * multiplier);
+                AddXP(multipliedXP);
             }
         }
     }
@@ -101,7 +105,10 @@ public class XPManager : MonoBehaviour
 
     public void AddXPForCorrectAnswer()
     {
-        AddXP(xpPerCorrectAnswer);
+        // Apply streak multiplier to correct answer XP
+        float multiplier = StreakMultiplier.Instance != null ? StreakMultiplier.Instance.GetXPMultiplier() : 1f;
+        int multipliedXP = Mathf.RoundToInt(xpPerCorrectAnswer * multiplier);
+        AddXP(multipliedXP);
     }
 
     private void UpdateXPDisplay()

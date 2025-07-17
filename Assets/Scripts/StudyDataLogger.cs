@@ -30,9 +30,13 @@ public class StudyDataLogger : MonoBehaviour
     public void RecordImageData(int imageIndex, string imageName, float sliderValue, string selectedOption, string taskType, string correctAnswer)
     {
         float timeSpent = Time.time - currentImageStartTime;
-        ImageStudyRecord record = new ImageStudyRecord(imageIndex, imageName, timeSpent, sliderValue, selectedOption, taskType, correctAnswer);
+
+        // Get current streak multiplier
+        int streakMultiplier = StreakMultiplier.Instance != null ? StreakMultiplier.Instance.CurrentStreak : 1;
+
+        ImageStudyRecord record = new ImageStudyRecord(imageIndex, imageName, timeSpent, sliderValue, selectedOption, taskType, correctAnswer, streakMultiplier);
         studyRecords.Add(record);
-        Debug.Log($"[StudyDataLogger] Recorded: Image {imageName}, Time: {timeSpent:F2}s, Slider: {sliderValue:F0}%, Option: {selectedOption}, Type: {taskType}");
+        Debug.Log($"[StudyDataLogger] Recorded: Image {imageName}, Time: {timeSpent:F2}s, Slider: {sliderValue:F0}%, Option: {selectedOption}, Type: {taskType}, Streak: x{streakMultiplier}");
     }
 
     public void SaveToFile()
@@ -64,7 +68,7 @@ public class StudyDataLogger : MonoBehaviour
 
         // --- Performance Metrics ---
         csv.AppendLine("### Performance Metrics ###");
-        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,IsCorrect,Timestamp");
+        csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,IsCorrect,StreakMultiplier,Timestamp");
 
         foreach (var record in studyRecords)
         {
@@ -85,7 +89,7 @@ public class StudyDataLogger : MonoBehaviour
                 isCorrect = record.selectedOption == record.correctAnswer;
             }
 
-            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{isCorrect},{record.timestamp}");
+            csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{isCorrect},{record.streakMultiplier},{record.timestamp}");
         }
 
         // --- Physiological Tracking ---

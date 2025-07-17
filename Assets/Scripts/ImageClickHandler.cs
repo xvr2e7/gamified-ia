@@ -124,7 +124,7 @@ public class ImageClickHandler : MonoBehaviour
             );
         }
 
-        // Check if answer is correct and award XP
+        // Check if answer is correct and handle streak/XP
         bool isCorrect = false;
 
         if (taskType == "VALUE_PART" && !string.IsNullOrEmpty(correctAnswer))
@@ -143,10 +143,28 @@ public class ImageClickHandler : MonoBehaviour
             isCorrect = selectedOption == correctAnswer;
         }
 
-        // Award XP if answer is correct
-        if (isCorrect && XPManager.Instance != null)
+        // Handle streak multiplier and award XP
+        if (isCorrect)
         {
-            XPManager.Instance.AddXPForCorrectAnswer();
+            // Notify streak multiplier of correct answer (this will check if within countdown)
+            if (StreakMultiplier.Instance != null)
+            {
+                StreakMultiplier.Instance.OnCorrectAnswer();
+            }
+
+            // Award XP with current multiplier
+            if (XPManager.Instance != null)
+            {
+                XPManager.Instance.AddXPForCorrectAnswer();
+            }
+        }
+        else
+        {
+            // Reset streak on wrong answer
+            if (StreakMultiplier.Instance != null)
+            {
+                StreakMultiplier.Instance.OnWrongAnswer();
+            }
         }
 
         // Check if this is the last image before advancing
