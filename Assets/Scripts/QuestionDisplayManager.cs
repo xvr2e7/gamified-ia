@@ -40,6 +40,9 @@ public class QuestionDisplayManager : MonoBehaviour
         LoadQuestionFiles();
         if (questionFiles.Count > 0)
             LoadAndDisplayQuestion(questionFiles[0]);
+
+        if (QuestionTimer.Instance != null)
+            QuestionTimer.Instance.StartTimer();
     }
 
     void LoadQuestionFiles()
@@ -63,6 +66,9 @@ public class QuestionDisplayManager : MonoBehaviour
         if (questionFiles.Count == 0) return;
         currentQuestionIndex = (currentQuestionIndex + 1) % questionFiles.Count;
         LoadAndDisplayQuestion(questionFiles[currentQuestionIndex]);
+
+        if (QuestionTimer.Instance != null)
+            QuestionTimer.Instance.StartTimer();
     }
 
     void LoadAndDisplayQuestion(string fileName)
