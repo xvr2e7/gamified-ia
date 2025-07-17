@@ -10,6 +10,9 @@ public class XPManager : MonoBehaviour
     [Header("UI Reference")]
     [SerializeField] private TextMeshProUGUI xpDisplay;
 
+    [Header("Mushroom Counter")]
+    [SerializeField] private MushroomCounter mushroomCounter;
+
     private int currentXP = 0;
     private float timer = 0f;
     private bool isCountingXP = false;
@@ -38,6 +41,12 @@ public class XPManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        // Find mushroom counter if not assigned
+        if (mushroomCounter == null)
+        {
+            mushroomCounter = FindObjectOfType<MushroomCounter>();
+        }
     }
 
     void Start()
@@ -65,6 +74,12 @@ public class XPManager : MonoBehaviour
         timer = 0f; // Reset timer to ensure clean start
         currentXP = 0; // Reset XP for new study session
         UpdateXPDisplay();
+
+        // Notify mushroom counter
+        if (mushroomCounter != null)
+        {
+            mushroomCounter.UpdateMushroomCount(currentXP);
+        }
     }
 
     public void StopCounting()
@@ -76,6 +91,12 @@ public class XPManager : MonoBehaviour
     {
         currentXP += amount;
         UpdateXPDisplay();
+
+        // Update mushroom counter
+        if (mushroomCounter != null)
+        {
+            mushroomCounter.UpdateMushroomCount(currentXP);
+        }
     }
 
     public void AddXPForCorrectAnswer()

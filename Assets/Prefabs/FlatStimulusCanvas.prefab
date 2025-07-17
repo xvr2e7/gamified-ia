@@ -175,6 +175,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: ImageViewer
       objectReference: {fileID: 0}
+    - target: {fileID: 2948471078329796678, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a0257ef08f390446b8964478549f5409, type: 2}
+    - target: {fileID: 2948471078329796678, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -5529198066168698443, guid: a0257ef08f390446b8964478549f5409, type: 2}
     - target: {fileID: 4660017833910611838, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -215,6 +223,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6525831851478958123, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a0257ef08f390446b8964478549f5409, type: 2}
+    - target: {fileID: 6525831851478958123, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -5529198066168698443, guid: a0257ef08f390446b8964478549f5409, type: 2}
+    - target: {fileID: 7461393212968981829, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a0257ef08f390446b8964478549f5409, type: 2}
+    - target: {fileID: 7461393212968981829, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -5529198066168698443, guid: a0257ef08f390446b8964478549f5409, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -245,6 +269,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 170
       objectReference: {fileID: 0}
+    - target: {fileID: 4119034891678042323, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a0257ef08f390446b8964478549f5409, type: 2}
+    - target: {fileID: 4119034891678042323, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -5529198066168698443, guid: a0257ef08f390446b8964478549f5409, type: 2}
     - target: {fileID: 5958741638627421599, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
       propertyPath: m_Name
       value: QuestionAnswerSystem
