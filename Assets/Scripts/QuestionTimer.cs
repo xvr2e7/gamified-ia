@@ -165,10 +165,14 @@ public class QuestionTimer : MonoBehaviour
             pulseCoroutine = null;
         }
 
-        // Slide out timer
+        // Stop any ongoing slide animations
+        StopAllCoroutines();
+
+        // Immediately hide timer instead of sliding out
         if (timerContainer != null)
         {
-            StartCoroutine(SlideOutTimer());
+            timerContainer.SetActive(false);
+            timerContainer.transform.localScale = originalScale; // Reset scale
         }
 
         // Stop particles
