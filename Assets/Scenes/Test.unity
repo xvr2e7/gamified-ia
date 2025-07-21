@@ -211,17 +211,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1968499957954680197, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: hudGameObject
+      value: 
+      objectReference: {fileID: 699785239}
     - target: {fileID: 3620752070129720133, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: m_Name
       value: FlatStimulusCanvas
       objectReference: {fileID: 0}
     - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: changeSpeed
-      value: 3
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: maxSpeedMultiplier
-      value: 0.5
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: accelerationCurve.m_PostInfinity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].time
+      value: 1.9833333
+      objectReference: {fileID: 0}
+    - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].value
+      value: 1.9858491
+      objectReference: {fileID: 0}
+    - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[0].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].outSlope
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -754,7 +778,7 @@ MonoBehaviour:
   questionTimeLimit: 6
   urgencyThreshold: 3
   criticalThreshold: 2
-  timerContainer: {fileID: 748736865}
+  timerContainer: {fileID: 0}
   baseCircle: {fileID: 1485636714}
   progressRing: {fileID: 1271128855}
   countdownText: {fileID: 1671736312}

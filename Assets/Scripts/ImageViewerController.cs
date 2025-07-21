@@ -1,13 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class ImageViewerController : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private RawImage displayImage;
@@ -21,9 +19,12 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
     [SerializeField] private GameObject sliderPanel;
     [SerializeField] private GameObject buttonPanel;
 
+    [Header("HUD References")]
+    [SerializeField] private GameObject hudGameObject;
+    [SerializeField] private GameObject timerContainer;
+
     [Header("Visual Feedback")]
     [SerializeField] private Color normalPanelColor = new Color(1f, 1f, 1f, 0.392f);
-    [SerializeField] private Color hoverPanelColor = new Color(0.9f, 0.9f, 0.9f, 0.5f);
 
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
@@ -58,11 +59,23 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void Start()
     {
+        // Set initial panel states
         openingPanel.SetActive(true);
         endingPanel.SetActive(false);
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
+
+        // Hide HUD and timer during opening panel
+        if (hudGameObject != null)
+        {
+            hudGameObject.SetActive(false);
+        }
+
+        if (timerContainer != null)
+        {
+            timerContainer.SetActive(false);
+        }
 
         LoadImages();
 
@@ -75,17 +88,14 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     void Update()
     {
-        // Handle trigger input for opening panel
+        // Handle trigger input only for opening panel
         if (openingPanel != null && openingPanel.activeSelf)
         {
-            // Read trigger values
             float leftTrigger = leftTriggerAction != null ? leftTriggerAction.action.ReadValue<float>() : 0f;
             float rightTrigger = rightTriggerAction != null ? rightTriggerAction.action.ReadValue<float>() : 0f;
 
-            // Check if either trigger is pressed (threshold of 0.5)
             bool triggerPressed = leftTrigger > 0.5f || rightTrigger > 0.5f;
 
-            // Detect trigger press (not hold) - only fires once per press
             if (triggerPressed && !triggerWasPressed)
             {
                 StartStudy();
@@ -95,51 +105,49 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         }
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    private void StartStudy()
     {
-        if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
-            openingPanelImage.color = hoverPanelColor;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (openingPanel != null && openingPanel.activeSelf && openingPanelImage != null)
-            openingPanelImage.color = normalPanelColor;
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (openingPanel != null && openingPanel.activeSelf)
-            StartStudy();
-    }
-
-    public void StartStudy()
-    {
+        // Hide opening panel
         openingPanel.SetActive(false);
+
+        // Show study UI
         displayImage.gameObject.SetActive(true);
         imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
 
-        questionManager.InitializeQuestions();
+        // Show HUD and timer
+        if (hudGameObject != null)
+        {
+            hudGameObject.SetActive(true);
+        }
 
-        // Start XP counting
+        if (timerContainer != null)
+        {
+            timerContainer.SetActive(true);
+        }
+
+        // Initialize HUD components
         if (XPManager.Instance != null)
         {
             XPManager.Instance.StartCounting();
         }
 
-        if (loadedImages.Count > 0)
+        if (StreakMultiplier.Instance != null)
         {
-            currentImageIndex = 0;
-            DisplayCurrentImage();
-            dataLogger.StartImageTimer();
-
-            if (dataLogger != null && dataLogger.trackingManager != null)
-                dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
+            StreakMultiplier.Instance.ResetStreak();
         }
 
-        // Reset the trigger state to prevent immediate advancement
-        triggerWasPressed = true;
+        // Start question system and timer
+        if (questionManager != null)
+        {
+            questionManager.enabled = true;
+            questionManager.InitializeQuestions();
+        }
+
+        DisplayCurrentImage();
+
+        if (dataLogger != null)
+            dataLogger.StartImageTimer();
     }
 
     private void LoadImages()
@@ -147,62 +155,45 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         string fullPath = Path.Combine(Application.streamingAssetsPath, imageFolderPath);
         if (!Directory.Exists(fullPath))
         {
-            Debug.LogError($"[ImageViewerController] Directory not found: {fullPath}");
+            Debug.LogError($"Image directory not found: {fullPath}");
             return;
         }
 
-        var files = new List<string>();
-        foreach (var ext in new[] { "*.png", "*.jpg", "*.jpeg" })
-            files.AddRange(Directory.GetFiles(fullPath, ext));
-
-        files.Sort();
-        foreach (var path in files)
-            StartCoroutine(LoadImageCoroutine(path));
-    }
-
-    private IEnumerator LoadImageCoroutine(string path)
-    {
-        byte[] data = File.ReadAllBytes(path);
-        var tex = new Texture2D(2, 2);
-        if (tex.LoadImage(data))
+        string[] imageFiles = Directory.GetFiles(fullPath, "*.png");
+        foreach (string file in imageFiles)
         {
-            tex.name = Path.GetFileNameWithoutExtension(path);
-            loadedImages.Add(tex);
+            byte[] imageData = File.ReadAllBytes(file);
+            Texture2D texture = new Texture2D(2, 2);
+            if (texture.LoadImage(imageData))
+            {
+                texture.name = Path.GetFileNameWithoutExtension(file);
+                loadedImages.Add(texture);
+            }
         }
-        yield return null;
+
+        Debug.Log($"[ImageViewerController] Loaded {loadedImages.Count} images");
     }
 
     private void DisplayCurrentImage()
     {
-        var tex = loadedImages[currentImageIndex];
-        displayImage.texture = tex;
+        if (loadedImages.Count == 0) return;
 
-        // Keep aspect ratio
-        var rt = displayImage.rectTransform;
-        float h = rt.sizeDelta.y;
-        rt.sizeDelta = new Vector2(h * tex.width / tex.height, h);
-
-        imageCounter.text = $"{tex.name} ({currentImageIndex + 1}/{loadedImages.Count})";
+        displayImage.texture = loadedImages[currentImageIndex];
+        imageCounter.text = $"{currentImageIndex + 1} / {loadedImages.Count}";
     }
 
     public void NextImage()
     {
-        // Stop tracking current image:
-        if (dataLogger != null && dataLogger.trackingManager != null)
-            dataLogger.trackingManager.StopTracking();
+        if (loadedImages.Count == 0) return;
 
-        if (++currentImageIndex >= loadedImages.Count)
+        currentImageIndex++;
+        if (currentImageIndex >= loadedImages.Count)
         {
             EndStudy();
             return;
         }
 
         DisplayCurrentImage();
-        dataLogger.StartImageTimer();
-
-        // Start tracking new image:
-        if (dataLogger != null && dataLogger.trackingManager != null)
-            dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
     }
 
     public void PreviousImage()
@@ -214,18 +205,29 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void EndStudy()
     {
-        // Stop XP counting
-        if (XPManager.Instance != null)
-        {
-            XPManager.Instance.StopCounting();
-        }
-
-        // Stop tracking final image:
+        // Stop tracking and save data
         if (dataLogger != null && dataLogger.trackingManager != null)
             dataLogger.trackingManager.StopTracking();
 
         dataLogger.SaveToFile();
 
+        // Stop HUD components
+        if (XPManager.Instance != null)
+        {
+            XPManager.Instance.StopCounting();
+        }
+
+        if (QuestionTimer.Instance != null)
+        {
+            QuestionTimer.Instance.StopTimer();
+        }
+
+        if (StreakMultiplier.Instance != null)
+        {
+            StreakMultiplier.Instance.ResetStreak();
+        }
+
+        // Hide study UI
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
@@ -234,6 +236,18 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
 
         questionManager.enabled = false;
 
+        // Hide HUD and timer
+        if (hudGameObject != null)
+        {
+            hudGameObject.SetActive(false);
+        }
+
+        if (timerContainer != null)
+        {
+            timerContainer.SetActive(false);
+        }
+
+        // Show ending panel
         endingPanel.SetActive(true);
     }
 
@@ -256,11 +270,15 @@ public class ImageViewerController : MonoBehaviour, IPointerEnterHandler, IPoint
         return openingPanel != null && openingPanel.activeSelf;
     }
 
-    // private void Update()
-    // {
-    //     if (openingPanel != null && openingPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
-    //         StartStudy();
-    // }
+    public bool IsEndingPanelActive()
+    {
+        return endingPanel != null && endingPanel.activeSelf;
+    }
+
+    public bool IsStudyActive()
+    {
+        return !IsOpeningPanelActive() && !IsEndingPanelActive();
+    }
 
     private void OnDestroy()
     {
