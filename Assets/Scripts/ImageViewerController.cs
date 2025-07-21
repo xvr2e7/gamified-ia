@@ -180,6 +180,11 @@ public class ImageViewerController : MonoBehaviour
 
         displayImage.texture = loadedImages[currentImageIndex];
         imageCounter.text = $"{currentImageIndex + 1} / {loadedImages.Count}";
+
+        if (dataLogger != null && dataLogger.trackingManager != null)
+        {
+            dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
+        }
     }
 
     public void NextImage()

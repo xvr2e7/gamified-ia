@@ -11,14 +11,8 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     [SerializeField] private Transform xrOrigin;
     [SerializeField] private Camera mainCamera;
 
-    [Header("Ray Interactors")]
-    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor leftRayInteractor;
-    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rightRayInteractor;
-
     [Header("Tracking Settings")]
-    [SerializeField] private float trackingRate = 10f; // Hz
-    [SerializeField] private float maxRayDistance = 20f;
-    [SerializeField] private LayerMask raycastLayers = -1;
+    [SerializeField] private float trackingRate = 90f; // Hz
 
     [Header("Simulator Settings")]
     [SerializeField] private bool forceSimulatorMode = false;
@@ -47,19 +41,6 @@ public class PhysiologicalTrackingManager : MonoBehaviour
 
         if (mainCamera == null)
             mainCamera = Camera.main;
-
-        // Auto-find ray interactors if not assigned
-        if (leftRayInteractor == null || rightRayInteractor == null)
-        {
-            var rayInteractors = FindObjectsOfType<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
-            foreach (var interactor in rayInteractors)
-            {
-                if (interactor.name.ToLower().Contains("left"))
-                    leftRayInteractor = interactor;
-                else if (interactor.name.ToLower().Contains("right"))
-                    rightRayInteractor = interactor;
-            }
-        }
 
         trackingInterval = 1f / trackingRate;
         CheckTrackingEnvironment();
@@ -140,14 +121,8 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         if (!useSimulator && eyeTrackingAvailable)
             CollectEyeTrackingData(currentTime);
 
-        // Always collect head and hand tracking
+        // Always collect head tracking
         CollectHeadTracking(currentTime);
-
-        if (leftRayInteractor != null)
-            CollectRayInteractorData(leftRayInteractor, "LeftHand", currentTime);
-
-        if (rightRayInteractor != null)
-            CollectRayInteractorData(rightRayInteractor, "RightHand", currentTime);
     }
 
     void CollectEyeTrackingData(float timestamp)
@@ -281,27 +256,9 @@ public class PhysiologicalTrackingManager : MonoBehaviour
         ));
     }
 
-    void CollectRayInteractorData(UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rayInteractor, string handName, float timestamp)
-    {
-        if (rayInteractor == null) return;
-
-        Transform rayOrigin = rayInteractor.rayOriginTransform;
-        Vector3 rayDirection = rayOrigin.forward;
-        string hitObjectName = PerformRaycast(rayOrigin.position, rayDirection);
-
-        currentImageData.Add(new PhysiologicalTrackingData(
-            timestamp,
-            handName,
-            rayOrigin.position,
-            rayDirection,
-            hitObjectName,
-            rayInteractor.enabled
-        ));
-    }
-
     string PerformRaycast(Vector3 origin, Vector3 direction)
     {
-        if (Physics.Raycast(origin, direction, out RaycastHit hit, maxRayDistance, raycastLayers))
+        if (Physics.Raycast(origin, direction, out RaycastHit hit, 20f)) // Using default 20m distance
         {
             return hit.collider.gameObject.name;
         }

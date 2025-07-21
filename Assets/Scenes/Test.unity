@@ -540,6 +540,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrackingManager
       objectReference: {fileID: 0}
+    - target: {fileID: 6321921196030043764, guid: 948fc49a6859c4cbbb3f19af49cdb184, type: 3}
+      propertyPath: trackingRate
+      value: 90
+      objectReference: {fileID: 0}
     - target: {fileID: 7012495277426264633, guid: 948fc49a6859c4cbbb3f19af49cdb184, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -778,7 +782,6 @@ MonoBehaviour:
   questionTimeLimit: 6
   urgencyThreshold: 3
   criticalThreshold: 2
-  timerContainer: {fileID: 0}
   baseCircle: {fileID: 1485636714}
   progressRing: {fileID: 1271128855}
   countdownText: {fileID: 1671736312}
@@ -792,8 +795,6 @@ MonoBehaviour:
   urgencySound: {fileID: 0}
   timeoutSound: {fileID: 0}
   tickSound: {fileID: 0}
-  pulseIntensity: 0.1
-  pulseSpeed: 3
 --- !u!1001 &765536450
 PrefabInstance:
   m_ObjectHideFlags: 0
