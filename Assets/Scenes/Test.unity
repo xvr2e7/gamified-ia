@@ -227,6 +227,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FlatStimulusCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 3620752070129720133, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: changeSpeed
       value: 1.5
@@ -253,6 +257,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5454420813452503769, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: accelerationCurve.m_Curve.Array.data[1].outSlope
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8761347145936215342, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

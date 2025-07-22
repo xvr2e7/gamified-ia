@@ -420,6 +420,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: TimeContainer
       objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: deathSound
+      value: 
+      objectReference: {fileID: 8300000, guid: facbfd7efff2b43b99c032207350227c, type: 3}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: damageSound
+      value: 
+      objectReference: {fileID: 8300000, guid: c76d132bbaa2b408fb08935eb0aa0ea3, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

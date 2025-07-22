@@ -30,11 +30,14 @@ public class QuestionTimer : MonoBehaviour
     [SerializeField] private AudioClip urgencySound;
     [SerializeField] private AudioClip timeoutSound;
     [SerializeField] private AudioClip tickSound;
+    [SerializeField] private AudioClip damageSound;
+    [SerializeField] private AudioClip deathSound;
 
     private float currentTime;
     private bool isTimerActive = false;
     private bool isInUrgencyMode = false;
     private bool hasTimedOut = false;
+    private MushroomCounter mushroomCounter;
     private AudioSource audioSource;
     private Coroutine timerCoroutine;
 
@@ -71,6 +74,8 @@ public class QuestionTimer : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
+
+        mushroomCounter = FindObjectOfType<MushroomCounter>();
     }
 
     void Start()
@@ -250,27 +255,113 @@ public class QuestionTimer : MonoBehaviour
         hasTimedOut = true;
         isTimerActive = false;
 
-        PlaySound(timeoutSound);
-        StartCoroutine(TimeoutEffect());
+        // Attempt to take damage and determine result
+        bool damageWasTaken = false;
+        bool hadMushroomsBeforeDamage = false;
+        bool hasMushroomsAfterDamage = false;
+
+        if (mushroomCounter != null)
+        {
+            hadMushroomsBeforeDamage = mushroomCounter.HasMushrooms();
+            damageWasTaken = mushroomCounter.TakeDamage();
+            hasMushroomsAfterDamage = mushroomCounter.HasMushrooms();
+        }
+
+        // Play appropriate sound based on outcome
+        if (damageWasTaken)
+        {
+            if (hasMushroomsAfterDamage)
+            {
+                // Mushroom was lost but some remain - damage sound
+                PlaySound(damageSound != null ? damageSound : timeoutSound);
+            }
+            else
+            {
+                // Last mushroom was lost - death sound
+                PlaySound(deathSound != null ? deathSound : timeoutSound);
+            }
+        }
+        else
+        {
+            // No mushrooms to lose - fallback to timeout sound
+            PlaySound(timeoutSound);
+        }
+
+        // Start appropriate visual effect
+        StartCoroutine(DamageOverlayEffect(damageWasTaken, hadMushroomsBeforeDamage && !hasMushroomsAfterDamage));
         OnTimeOut?.Invoke();
     }
 
-    private IEnumerator TimeoutEffect()
+    private IEnumerator DamageOverlayEffect(bool damageWasTaken, bool wasLastMushroom)
     {
-        // Flash effect
+        if (damageWasTaken)
+        {
+            if (wasLastMushroom)
+            {
+                // Last mushroom lost - more intense red overlay
+                Color deathColor = new Color(0.9f, 0.05f, 0.05f, 0.7f);
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (urgencyOverlay != null)
+                        urgencyOverlay.color = deathColor;
+
+                    yield return new WaitForSeconds(0.25f);
+
+                    if (urgencyOverlay != null)
+                        urgencyOverlay.color = new Color(deathColor.r, deathColor.g, deathColor.b, 0.1f);
+
+                    yield return new WaitForSeconds(0.25f);
+                }
+            }
+            else
+            {
+                // Regular damage - red overlay
+                Color damageColor = new Color(0.8f, 0.1f, 0.1f, 0.6f);
+
+                for (int i = 0; i < 2; i++)
+                {
+                    if (urgencyOverlay != null)
+                        urgencyOverlay.color = damageColor;
+
+                    yield return new WaitForSeconds(0.2f);
+
+                    if (urgencyOverlay != null)
+                        urgencyOverlay.color = new Color(damageColor.r, damageColor.g, damageColor.b, 0.1f);
+
+                    yield return new WaitForSeconds(0.2f);
+                }
+            }
+        }
+        else
+        {
+            // Attempted damage but no mushrooms - orange warning
+            Color warningColor = new Color(1f, 0.5f, 0f, 0.4f);
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (urgencyOverlay != null)
+                    urgencyOverlay.color = warningColor;
+
+                yield return new WaitForSeconds(0.1f);
+
+                if (urgencyOverlay != null)
+                    urgencyOverlay.color = new Color(warningColor.r, warningColor.g, warningColor.b, 0.05f);
+
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
+        // Standard timeout visual effects
         for (int i = 0; i < 3; i++)
         {
             if (progressRing != null)
                 progressRing.color = Color.white;
-            if (urgencyOverlay != null)
-                urgencyOverlay.color = new Color(criticalColor.r, criticalColor.g, criticalColor.b, 0.4f);
 
             yield return new WaitForSeconds(0.15f);
 
             if (progressRing != null)
                 progressRing.color = criticalColor;
-            if (urgencyOverlay != null)
-                urgencyOverlay.color = new Color(criticalColor.r, criticalColor.g, criticalColor.b, 0.1f);
 
             yield return new WaitForSeconds(0.15f);
         }
@@ -283,6 +374,9 @@ public class QuestionTimer : MonoBehaviour
 
         if (progressRing != null)
             progressRing.color = criticalColor;
+
+        if (urgencyOverlay != null)
+            urgencyOverlay.color = new Color(criticalColor.r, criticalColor.g, criticalColor.b, 0f);
     }
 
     private void PlaySound(AudioClip clip)

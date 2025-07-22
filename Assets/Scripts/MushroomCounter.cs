@@ -21,6 +21,7 @@ public class MushroomCounter : MonoBehaviour
     [SerializeField] private float bounceDuration = 0.5f;
 
     private int mushroomCount = 0;
+    private int damageCount = 0;
     private AudioSource audioSource;
     private Image mushroomIconImage;
 
@@ -45,18 +46,47 @@ public class MushroomCounter : MonoBehaviour
 
     public void UpdateMushroomCount(int newXP)
     {
-        int newCount = newXP / 25;
+        int baseCount = newXP / 25;
+        int newDisplayedCount = Mathf.Max(0, baseCount - damageCount);
 
-        if (newCount > mushroomCount)
+        if (baseCount > mushroomCount)
         {
-            mushroomCount = newCount;
+            mushroomCount = baseCount;
             StartCoroutine(AnimateCollection());
         }
-        else if (newCount != mushroomCount)
+        else if (newDisplayedCount != GetDisplayedMushroomCount())
         {
-            mushroomCount = newCount;
             UpdateDisplay();
         }
+    }
+
+    public bool TakeDamage()
+    {
+        int currentDisplayed = GetDisplayedMushroomCount();
+
+        if (currentDisplayed > 0)
+        {
+            damageCount++;
+            UpdateDisplay();
+            return true; // Damage was taken
+        }
+
+        return false; // No mushrooms to lose
+    }
+
+    public int GetMushroomCount()
+    {
+        return mushroomCount;
+    }
+
+    public int GetDisplayedMushroomCount()
+    {
+        return Mathf.Max(0, mushroomCount - damageCount);
+    }
+
+    public bool HasMushrooms()
+    {
+        return GetDisplayedMushroomCount() > 0;
     }
 
     private IEnumerator AnimateCollection()
@@ -77,7 +107,9 @@ public class MushroomCounter : MonoBehaviour
         }
 
         // Bounce animation on the icon
-        Transform iconTransform = mushroomIconImage != null ? mushroomIconImage.transform : transform;
+        Transform iconTransform = mushroomIconImage != null ?
+            mushroomIconImage.transform : transform;
+
         if (iconTransform != null)
         {
             Vector3 originalScale = iconTransform.localScale;
@@ -104,10 +136,12 @@ public class MushroomCounter : MonoBehaviour
 
     private void UpdateDisplay()
     {
-        // Update mushroom icon sprite based on count
+        int displayedCount = GetDisplayedMushroomCount();
+
+        // Update mushroom icon sprite based on displayed count
         if (mushroomIconImage != null)
         {
-            if (mushroomCount == 0)
+            if (displayedCount == 0)
             {
                 mushroomIconImage.sprite = emptyMushroomSprite;
             }
@@ -120,20 +154,15 @@ public class MushroomCounter : MonoBehaviour
         // Counter text
         if (counterText != null)
         {
-            if (mushroomCount == 0)
+            if (displayedCount == 0)
             {
                 counterText.gameObject.SetActive(false);
             }
             else
             {
                 counterText.gameObject.SetActive(true);
-                counterText.text = $"x {mushroomCount}";
+                counterText.text = $"x {displayedCount}";
             }
         }
-    }
-
-    public int GetMushroomCount()
-    {
-        return mushroomCount;
     }
 }
