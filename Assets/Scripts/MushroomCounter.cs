@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
@@ -6,7 +7,10 @@ public class MushroomCounter : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI counterText;
-    [SerializeField] private Transform mushroomIcon;
+
+    [Header("Mushroom Sprites")]
+    [SerializeField] private Sprite emptyMushroomSprite;
+    [SerializeField] private Sprite filledMushroomSprite;
 
     [Header("Effects")]
     [SerializeField] private ParticleSystem collectParticles;
@@ -18,12 +22,23 @@ public class MushroomCounter : MonoBehaviour
 
     private int mushroomCount = 0;
     private AudioSource audioSource;
+    private Image mushroomIconImage;
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
+
+        mushroomIconImage = GetComponent<Image>();
+        if (mushroomIconImage == null)
+        {
+            Transform iconChild = transform.Find("MushroomIcon");
+            if (iconChild != null)
+            {
+                mushroomIconImage = iconChild.GetComponent<Image>();
+            }
+        }
 
         UpdateDisplay();
     }
@@ -37,11 +52,16 @@ public class MushroomCounter : MonoBehaviour
             mushroomCount = newCount;
             StartCoroutine(AnimateCollection());
         }
+        else if (newCount != mushroomCount)
+        {
+            mushroomCount = newCount;
+            UpdateDisplay();
+        }
     }
 
     private IEnumerator AnimateCollection()
     {
-        // Update text
+        // Update display first
         UpdateDisplay();
 
         // Play particle effect
@@ -57,9 +77,10 @@ public class MushroomCounter : MonoBehaviour
         }
 
         // Bounce animation on the icon
-        if (mushroomIcon != null)
+        Transform iconTransform = mushroomIconImage != null ? mushroomIconImage.transform : transform;
+        if (iconTransform != null)
         {
-            Vector3 originalScale = mushroomIcon.localScale;
+            Vector3 originalScale = iconTransform.localScale;
             float elapsed = 0;
 
             while (elapsed < bounceDuration)
@@ -69,23 +90,45 @@ public class MushroomCounter : MonoBehaviour
 
                 // Bounce curve
                 float scale = 1f + (bounceScale - 1f) * Mathf.Sin(t * Mathf.PI);
-                mushroomIcon.localScale = originalScale * scale;
+                iconTransform.localScale = originalScale * scale;
 
-                mushroomIcon.rotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 2) * 10f);
+                iconTransform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 2) * 10f);
 
                 yield return null;
             }
 
-            mushroomIcon.localScale = originalScale;
-            mushroomIcon.rotation = Quaternion.identity;
+            iconTransform.localScale = originalScale;
+            iconTransform.rotation = Quaternion.identity;
         }
     }
 
     private void UpdateDisplay()
     {
+        // Update mushroom icon sprite based on count
+        if (mushroomIconImage != null)
+        {
+            if (mushroomCount == 0)
+            {
+                mushroomIconImage.sprite = emptyMushroomSprite;
+            }
+            else
+            {
+                mushroomIconImage.sprite = filledMushroomSprite;
+            }
+        }
+
+        // Counter text
         if (counterText != null)
         {
-            counterText.text = $"x {mushroomCount}";
+            if (mushroomCount == 0)
+            {
+                counterText.gameObject.SetActive(false);
+            }
+            else
+            {
+                counterText.gameObject.SetActive(true);
+                counterText.text = $"x {mushroomCount}";
+            }
         }
     }
 

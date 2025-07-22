@@ -228,6 +228,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1179155097217136108}
     m_Modifications:
+    - target: {fileID: 2227760951989559525, guid: 3d7178c0abca64462a7543706a5a4b0b, type: 3}
+      propertyPath: m_SortingLayer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4382513208057607658, guid: 3d7178c0abca64462a7543706a5a4b0b, type: 3}
       propertyPath: m_Pivot.x
       value: 1
@@ -316,6 +320,18 @@ PrefabInstance:
       propertyPath: collectSound
       value: 
       objectReference: {fileID: 8300000, guid: f0a27858189a94988a74227a4782a2b3, type: 3}
+    - target: {fileID: 9170107768661607092, guid: 3d7178c0abca64462a7543706a5a4b0b, type: 3}
+      propertyPath: xpDisplayText
+      value: 
+      objectReference: {fileID: 3252262139773390886}
+    - target: {fileID: 9170107768661607092, guid: 3d7178c0abca64462a7543706a5a4b0b, type: 3}
+      propertyPath: emptyMushroomSprite
+      value: 
+      objectReference: {fileID: 2060060360, guid: 0b5a785a616934843b5e4a21419bcf04, type: 3}
+    - target: {fileID: 9170107768661607092, guid: 3d7178c0abca64462a7543706a5a4b0b, type: 3}
+      propertyPath: filledMushroomSprite
+      value: 
+      objectReference: {fileID: 1419878756, guid: 0b5a785a616934843b5e4a21419bcf04, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
