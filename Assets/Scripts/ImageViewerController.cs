@@ -26,6 +26,10 @@ public class ImageViewerController : MonoBehaviour
     [Header("Visual Feedback")]
     [SerializeField] private Color normalPanelColor = new Color(1f, 1f, 1f, 0.392f);
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip ambienceClip;
+    private AudioSource ambienceSource;
+
     [Header("Settings")]
     [SerializeField] private string imageFolderPath = "Data/SampleImages";
 
@@ -59,6 +63,14 @@ public class ImageViewerController : MonoBehaviour
 
     private void Start()
     {
+        // Set up ambience
+        ambienceSource = gameObject.AddComponent<AudioSource>();
+        ambienceSource.clip = ambienceClip;
+        ambienceSource.loop = true;
+        ambienceSource.volume = 0.3f;
+        ambienceSource.playOnAwake = false;
+        ambienceSource.spatialBlend = 0f;
+
         // Set initial panel states
         openingPanel.SetActive(true);
         endingPanel.SetActive(false);
@@ -107,6 +119,8 @@ public class ImageViewerController : MonoBehaviour
 
     private void StartStudy()
     {
+        if (ambienceSource != null) ambienceSource.Play();
+
         // Hide opening panel
         openingPanel.SetActive(false);
 
@@ -254,6 +268,8 @@ public class ImageViewerController : MonoBehaviour
 
         // Show ending panel
         endingPanel.SetActive(true);
+
+        if (ambienceSource != null) ambienceSource.Stop();
     }
 
     public string GetCurrentImageName()
