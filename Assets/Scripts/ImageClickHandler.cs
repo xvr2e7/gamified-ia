@@ -87,27 +87,30 @@ public class ImageClickHandler : MonoBehaviour
         float sliderValue = -1f;
         string selectedOption = "";
         string taskType = "";
+        string taskFamily = "";
+        string panelType = "";
         string correctAnswer = "";
 
         if (questionManager != null)
         {
             taskType = questionManager.GetCurrentTaskType();
+            taskFamily = questionManager.GetCurrentTaskFamily();
+            panelType = questionManager.GetCurrentPanelType();
             correctAnswer = questionManager.GetCorrectAnswer();
 
             // Check if it's a slider question
-            if (taskType == "VALUE_PART")
+            if (panelType == "slider")
             {
                 sliderValue = questionManager.GetCurrentSliderValue();
             }
             // Check if it's a button question
-            else if (taskType == "MIN_X")
+            else if (panelType == "button")
             {
                 int optionIndex = questionManager.GetSelectedOptionIndex();
                 if (optionIndex != -1)
                 {
                     selectedOption = questionManager.GetSelectedOptionText();
                 }
-                // Keep sliderValue as -1 for MIN_X questions
             }
         }
 
@@ -127,9 +130,9 @@ public class ImageClickHandler : MonoBehaviour
         // Check if answer is correct and handle streak/XP
         bool isCorrect = false;
 
-        if (taskType == "VALUE_PART" && !string.IsNullOrEmpty(correctAnswer))
+        if (panelType == "slider" && questionManager.IsSliderQuestion())
         {
-            // For slider questions, check if the slider value matches the correct answer
+            // For slider questions, parse the correct answer as float and check
             float correctValue;
             if (float.TryParse(correctAnswer, out correctValue))
             {
@@ -137,7 +140,7 @@ public class ImageClickHandler : MonoBehaviour
                 isCorrect = Mathf.Abs(sliderValue - correctValue) < sliderError;
             }
         }
-        else if (taskType == "MIN_X" && !string.IsNullOrEmpty(selectedOption))
+        else if (panelType == "button" && !string.IsNullOrEmpty(selectedOption))
         {
             // For multiple choice questions, check if selected option matches correct answer
             isCorrect = selectedOption == correctAnswer;

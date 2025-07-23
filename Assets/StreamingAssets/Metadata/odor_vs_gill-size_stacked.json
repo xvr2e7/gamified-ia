@@ -1,0 +1,61 @@
+{
+  "file": "odor_vs_gill-size_stacked.png",
+  "encoding": "STACK",
+  "feature": "odor",
+  "categories": [
+    "almond",
+    "anise",
+    "creosote",
+    "fishy",
+    "pungent",
+    "spicy"
+  ],
+  "matrix": {
+    "broad": [
+      352,
+      352,
+      0,
+      0,
+      0,
+      0
+    ],
+    "narrow": [
+      48,
+      48,
+      192,
+      576,
+      256,
+      576
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which odor has the most broad mushrooms?",
+      "answer": "almond",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in almond odor are narrow?",
+      "answer": 12.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which odor has the lowest narrow-to-broad ratio?",
+      "answer": "almond",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of narrow mushrooms across all odor categories?",
+      "answer": 11.8,
+      "panel": "slider"
+    }
+  ]
+}

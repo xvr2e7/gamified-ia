@@ -1,0 +1,61 @@
+{
+  "file": "population_vs_class_bar.png",
+  "encoding": "BAR",
+  "feature": "population",
+  "categories": [
+    "abundant",
+    "clustered",
+    "numerous",
+    "scattered",
+    "several",
+    "solitary"
+  ],
+  "matrix": {
+    "edible": [
+      384,
+      288,
+      400,
+      880,
+      1192,
+      1064
+    ],
+    "poisonous": [
+      0,
+      52,
+      0,
+      368,
+      2848,
+      648
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which population has the most edible mushrooms?",
+      "answer": "several",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in abundant population are poisonous?",
+      "answer": 0.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which population has the lowest poisonous-to-edible ratio?",
+      "answer": "abundant",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of poisonous mushrooms across all population categories?",
+      "answer": 8.0,
+      "panel": "slider"
+    }
+  ]
+}

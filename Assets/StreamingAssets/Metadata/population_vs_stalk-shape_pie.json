@@ -1,0 +1,61 @@
+{
+  "file": "population_vs_stalk-shape_pie.png",
+  "encoding": "PIE",
+  "feature": "population",
+  "categories": [
+    "abundant",
+    "clustered",
+    "numerous",
+    "scattered",
+    "several",
+    "solitary"
+  ],
+  "matrix": {
+    "enlarging": [
+      0,
+      340,
+      400,
+      720,
+      1208,
+      848
+    ],
+    "tapering": [
+      384,
+      0,
+      0,
+      528,
+      2832,
+      864
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which population has the most enlarging mushrooms?",
+      "answer": "several",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in abundant population are tapering?",
+      "answer": 100.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which population has the lowest tapering-to-enlarging ratio?",
+      "answer": "clustered",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of tapering mushrooms across all population categories?",
+      "answer": 9.5,
+      "panel": "slider"
+    }
+  ]
+}

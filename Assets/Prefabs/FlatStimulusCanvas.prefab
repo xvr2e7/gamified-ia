@@ -156,9 +156,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5105584490805310545}
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: ambienceClip
+      value: 
+      objectReference: {fileID: 8300000, guid: abe97d6a181c844948b3f11bbce3c677, type: 3}
+    - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: questionPanel
       value: 
       objectReference: {fileID: 6496128521494051813}
+    - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: imageFolderPath
+      value: Stimulus
+      objectReference: {fileID: 0}
     - target: {fileID: 337943369897732006, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: questionManager
       value: 
@@ -223,6 +231,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4839357663606021937, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 440
+      objectReference: {fileID: 0}
+    - target: {fileID: 4839357663606021937, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 280
+      objectReference: {fileID: 0}
+    - target: {fileID: 5746488713650616108, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5746488713650616108, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -5
+      objectReference: {fileID: 0}
     - target: {fileID: 6525831851478958123, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: m_fontAsset
       value: 
@@ -280,6 +304,30 @@ PrefabInstance:
     - target: {fileID: 5958741638627421599, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
       propertyPath: m_Name
       value: QuestionAnswerSystem
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: changeSpeed
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: maxSpeedMultiplier
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].time
+      value: 1.9833333
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].value
+      value: 1.9858491
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[0].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
+      propertyPath: accelerationCurve.m_Curve.Array.data[1].outSlope
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8898697119655281876, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
       propertyPath: m_LocalPosition.x

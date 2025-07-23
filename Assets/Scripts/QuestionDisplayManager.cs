@@ -1,9 +1,7 @@
-using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
-using System.Linq;
 
 public class QuestionDisplayManager : MonoBehaviour
 {
@@ -18,12 +16,10 @@ public class QuestionDisplayManager : MonoBehaviour
     public Slider sliderPrefab;
     public Button buttonPrefab;
 
-    [Header("Data Settings")]
-    public string dataFolder = "Data/Questions";
-
     private QuestionData currentQuestionData;
-    private List<string> questionFiles = new List<string>();
-    private int currentQuestionIndex = 0;
+    private TaskData currentTask;
+    private List<ImageViewerController.ImageQuestionPair> allPairs;
+    private int currentPairIndex = 0;
 
     private Slider instantiatedSlider;
     private TextMeshProUGUI valueText;
@@ -35,71 +31,45 @@ public class QuestionDisplayManager : MonoBehaviour
         buttonPanel.SetActive(false);
     }
 
-    public void InitializeQuestions()
+    public void InitializeWithPairs(List<ImageViewerController.ImageQuestionPair> pairs, int startIndex)
     {
-        LoadQuestionFiles();
-        if (questionFiles.Count > 0)
-            LoadAndDisplayQuestion(questionFiles[0]);
+        allPairs = pairs;
+        currentPairIndex = startIndex;
+
+        if (allPairs != null && allPairs.Count > 0)
+        {
+            LoadAndDisplayQuestion();
+        }
 
         if (QuestionTimer.Instance != null)
             QuestionTimer.Instance.StartTimer();
     }
 
-    void LoadQuestionFiles()
+    void LoadAndDisplayQuestion()
     {
-        string fullPath = Path.Combine(Application.streamingAssetsPath, dataFolder);
-        if (!Directory.Exists(fullPath))
+        if (allPairs == null || currentPairIndex >= allPairs.Count)
         {
-            Debug.LogError($"Questions directory not found: {fullPath}");
+            Debug.LogError("No pairs available or index out of range");
             return;
         }
 
-        questionFiles = Directory
-            .GetFiles(fullPath, "*.json")
-            .Select(f => Path.GetFileNameWithoutExtension(f))
-            .OrderBy(name => name)
-            .ToList();
-    }
-
-    public void LoadNextQuestion()
-    {
-        if (questionFiles.Count == 0) return;
-        currentQuestionIndex = (currentQuestionIndex + 1) % questionFiles.Count;
-        LoadAndDisplayQuestion(questionFiles[currentQuestionIndex]);
-
-        if (QuestionTimer.Instance != null)
-            QuestionTimer.Instance.StartTimer();
-    }
-
-    void LoadAndDisplayQuestion(string fileName)
-    {
-        // Parse JSON
-        string path = Path.Combine(Application.streamingAssetsPath, dataFolder, fileName + ".json");
-        if (!File.Exists(path))
-        {
-            Debug.LogError($"File not found: {path}");
-            return;
-        }
-        currentQuestionData = JsonUtility.FromJson<QuestionData>(File.ReadAllText(path));
-        if (currentQuestionData == null)
-        {
-            Debug.LogError("JSON parse failed");
-            return;
-        }
+        var currentPair = allPairs[currentPairIndex];
+        currentQuestionData = currentPair.metadata;
+        currentTask = currentQuestionData.tasks[currentPair.taskIndex];
 
         // Update question text
-        questionText.text = currentQuestionData.task.question;
+        questionText.text = currentTask.question;
 
         // Clear previous UI
         ClearInstantiatedElements();
 
-        // Show the right panel
-        if (currentQuestionData.task.task_type == "VALUE_PART")
+        // Show the right panel based on the panel type
+        if (currentTask.panel == "slider")
             SetupSlider();
-        else if (currentQuestionData.task.task_type == "MIN_X")
+        else if (currentTask.panel == "button")
             SetupCarousel();
         else
-            Debug.LogError($"Unknown task type: {currentQuestionData.task.task_type}");
+            Debug.LogError($"Unknown panel type: {currentTask.panel}");
     }
 
     void SetupSlider()
@@ -115,9 +85,11 @@ public class QuestionDisplayManager : MonoBehaviour
         var valueTransform = instantiatedSlider.transform.Find("Value");
         if (valueTransform != null)
             valueText = valueTransform.GetComponent<TextMeshProUGUI>();
-        else
-            Debug.LogWarning("Slider prefab missing child named 'Value'");
 
+        // Configure slider range (0-100 for percentages)
+        instantiatedSlider.minValue = 0;
+        instantiatedSlider.maxValue = 100;
+        instantiatedSlider.wholeNumbers = true;
 
         // Start in midpoint
         float mid = (instantiatedSlider.minValue + instantiatedSlider.maxValue) * 0.5f;
@@ -134,24 +106,12 @@ public class QuestionDisplayManager : MonoBehaviour
         buttonPanel.SetActive(true);
         sliderPanel.SetActive(false);
 
-        // Determine options array
-        string[] opts = currentQuestionData.task.options;
-        if ((opts == null || opts.Length == 0) && currentQuestionData.x_labels != null)
-            opts = currentQuestionData.x_labels;
-
-        if (opts == null || opts.Length == 0)
-        {
-            Debug.LogError("No options available for carousel");
-            return;
-        }
+        // Use categories array for button options
+        string[] opts = currentQuestionData.categories;
 
         // Initialize the existing GridControlledButtons on buttonPanel
         var carousel = buttonPanel.GetComponent<GridControlledButtons>();
-        if (carousel == null)
-        {
-            Debug.LogError("GridControlledButtons component missing on buttonPanel");
-            return;
-        }
+
         carousel.Initialize(opts, buttonPrefab);
     }
 
@@ -171,11 +131,24 @@ public class QuestionDisplayManager : MonoBehaviour
             carousel.Clear();
     }
 
-
     void UpdateValueText(float val)
     {
         if (valueText != null)
             valueText.text = $"{val:0}";
+    }
+
+    public void LoadNextQuestion()
+    {
+        if (allPairs == null || allPairs.Count == 0) return;
+
+        currentPairIndex++;
+        if (currentPairIndex < allPairs.Count)
+        {
+            LoadAndDisplayQuestion();
+
+            if (QuestionTimer.Instance != null)
+                QuestionTimer.Instance.StartTimer();
+        }
     }
 
     // --- Public getters ---
@@ -196,8 +169,17 @@ public class QuestionDisplayManager : MonoBehaviour
     }
 
     public string GetCurrentTaskType()
-        => currentQuestionData?.task?.task_type ?? "";
+        => currentTask?.type ?? "";
+
+    public string GetCurrentTaskFamily()
+        => currentTask?.family ?? "";
+
+    public string GetCurrentPanelType()
+        => currentTask?.panel ?? "";
 
     public string GetCorrectAnswer()
-        => currentQuestionData?.task?.answer ?? "";
+        => currentTask?.GetStringAnswer() ?? "";
+
+    public bool IsSliderQuestion()
+        => currentTask?.panel == "slider";
 }

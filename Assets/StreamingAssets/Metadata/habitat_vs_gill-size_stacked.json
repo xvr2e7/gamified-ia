@@ -1,0 +1,61 @@
+{
+  "file": "habitat_vs_gill-size_stacked.png",
+  "encoding": "STACK",
+  "feature": "habitat",
+  "categories": [
+    "grasses",
+    "leaves",
+    "meadows",
+    "paths",
+    "urban",
+    "waste"
+  ],
+  "matrix": {
+    "broad": [
+      2020,
+      192,
+      292,
+      568,
+      144,
+      192
+    ],
+    "narrow": [
+      128,
+      640,
+      0,
+      576,
+      224,
+      0
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which habitat has the most broad mushrooms?",
+      "answer": "grasses",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in grasses habitat are narrow?",
+      "answer": 6.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which habitat has the lowest narrow-to-broad ratio?",
+      "answer": "meadows",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of narrow mushrooms across all habitat categories?",
+      "answer": 5.3,
+      "panel": "slider"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "file": "habitat_vs_stalk-shape_stacked.png",
+  "encoding": "STACK",
+  "feature": "habitat",
+  "categories": [
+    "grasses",
+    "leaves",
+    "meadows",
+    "paths",
+    "urban",
+    "waste"
+  ],
+  "matrix": {
+    "enlarging": [
+      1236,
+      256,
+      292,
+      568,
+      224,
+      192
+    ],
+    "tapering": [
+      912,
+      576,
+      0,
+      576,
+      144,
+      0
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which habitat has the most enlarging mushrooms?",
+      "answer": "grasses",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in grasses habitat are tapering?",
+      "answer": 42.5,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which habitat has the lowest tapering-to-enlarging ratio?",
+      "answer": "meadows",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of tapering mushrooms across all habitat categories?",
+      "answer": 7.4,
+      "panel": "slider"
+    }
+  ]
+}

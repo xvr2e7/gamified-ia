@@ -74,17 +74,21 @@ public class StudyDataLogger : MonoBehaviour
         {
             string sliderValueStr = record.sliderValue == -1 ? "" : $"{record.sliderValue:F0}";
 
-            // Determine if answer was correct
+            // Determine if answer was correct based on whether it's a slider or button question
             bool isCorrect = false;
-            if (record.taskType == "VALUE_PART" && !string.IsNullOrEmpty(record.correctAnswer))
+
+            // Check if it's a slider question (has a valid slider value)
+            if (record.sliderValue >= 0 && !string.IsNullOrEmpty(record.correctAnswer))
             {
                 float correctValue;
                 if (float.TryParse(record.correctAnswer, out correctValue))
                 {
-                    isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 0.1f;
+                    // Use 5.0f tolerance for slider questions
+                    isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 5.0f;
                 }
             }
-            else if (record.taskType == "MIN_X" && !string.IsNullOrEmpty(record.selectedOption))
+            // Check if it's a button question (has a selected option)
+            else if (!string.IsNullOrEmpty(record.selectedOption) && !string.IsNullOrEmpty(record.correctAnswer))
             {
                 isCorrect = record.selectedOption == record.correctAnswer;
             }
@@ -104,15 +108,10 @@ public class StudyDataLogger : MonoBehaviour
                 WriteTrackingData(csv, allTracking);
             }
         }
-        else
-        {
-            Debug.LogWarning("[StudyDataLogger] No PhysiologicalTrackingManager assigned — skipping tracking data");
-        }
 
         // Write out and finish
         File.WriteAllText(filePath, csv.ToString());
         Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
-        Debug.Log($"[StudyDataLogger] Final XP Score: {finalXP}");
     }
 
     void WriteTrackingHeader(StringBuilder csv)

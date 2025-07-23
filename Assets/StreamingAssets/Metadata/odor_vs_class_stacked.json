@@ -1,0 +1,61 @@
+{
+  "file": "odor_vs_class_stacked.png",
+  "encoding": "STACK",
+  "feature": "odor",
+  "categories": [
+    "almond",
+    "anise",
+    "creosote",
+    "fishy",
+    "pungent",
+    "spicy"
+  ],
+  "matrix": {
+    "edible": [
+      400,
+      400,
+      0,
+      0,
+      0,
+      0
+    ],
+    "poisonous": [
+      0,
+      0,
+      192,
+      576,
+      256,
+      576
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which odor has the most edible mushrooms?",
+      "answer": "almond",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in almond odor are poisonous?",
+      "answer": 0.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which odor has the lowest poisonous-to-edible ratio?",
+      "answer": "almond",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of poisonous mushrooms across all odor categories?",
+      "answer": 11.1,
+      "panel": "slider"
+    }
+  ]
+}

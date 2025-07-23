@@ -1,0 +1,61 @@
+{
+  "file": "population_vs_gill-size_pie.png",
+  "encoding": "PIE",
+  "feature": "population",
+  "categories": [
+    "abundant",
+    "clustered",
+    "numerous",
+    "scattered",
+    "several",
+    "solitary"
+  ],
+  "matrix": {
+    "broad": [
+      384,
+      324,
+      400,
+      1024,
+      1840,
+      1640
+    ],
+    "narrow": [
+      0,
+      16,
+      0,
+      224,
+      2200,
+      72
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which population has the most broad mushrooms?",
+      "answer": "several",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in abundant population are narrow?",
+      "answer": 0.0,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which population has the lowest narrow-to-broad ratio?",
+      "answer": "abundant",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of narrow mushrooms across all population categories?",
+      "answer": 5.2,
+      "panel": "slider"
+    }
+  ]
+}

@@ -31,7 +31,8 @@ public class ImageViewerController : MonoBehaviour
     private AudioSource ambienceSource;
 
     [Header("Settings")]
-    [SerializeField] private string imageFolderPath = "Data/SampleImages";
+    [SerializeField] private string imageFolderPath = "Stimulus";
+    [SerializeField] private string metadataFolderPath = "Metadata";
 
     [Header("Trigger Input")]
     [SerializeField] private InputActionReference leftTriggerAction;
@@ -39,8 +40,16 @@ public class ImageViewerController : MonoBehaviour
 
     [SerializeField] private QuestionDisplayManager questionManager;
 
-    private List<Texture2D> loadedImages = new List<Texture2D>();
-    private int currentImageIndex = 0;
+    public class ImageQuestionPair
+    {
+        public Texture2D texture;
+        public QuestionData metadata;
+        public int taskIndex;
+        public string originalFileName;
+    }
+
+    private List<ImageQuestionPair> imageQuestionPairs = new List<ImageQuestionPair>();
+    private int currentPairIndex = 0;
     private StudyDataLogger dataLogger;
     private Image openingPanelImage;
     private bool triggerWasPressed = false;
@@ -89,7 +98,7 @@ public class ImageViewerController : MonoBehaviour
             timerContainer.SetActive(false);
         }
 
-        LoadImages();
+        LoadImagesAndMetadata();
 
         // Enable input actions
         if (leftTriggerAction != null)
@@ -155,7 +164,7 @@ public class ImageViewerController : MonoBehaviour
         if (questionManager != null)
         {
             questionManager.enabled = true;
-            questionManager.InitializeQuestions();
+            questionManager.InitializeWithPairs(imageQuestionPairs, currentPairIndex);
         }
 
         DisplayCurrentImage();
@@ -164,49 +173,107 @@ public class ImageViewerController : MonoBehaviour
             dataLogger.StartImageTimer();
     }
 
-    private void LoadImages()
+    private void LoadImagesAndMetadata()
     {
-        string fullPath = Path.Combine(Application.streamingAssetsPath, imageFolderPath);
-        if (!Directory.Exists(fullPath))
-        {
-            Debug.LogError($"Image directory not found: {fullPath}");
-            return;
-        }
+        // Load all metadata files first
+        string metadataPath = Path.Combine(Application.streamingAssetsPath, metadataFolderPath);
 
-        string[] imageFiles = Directory.GetFiles(fullPath, "*.png");
-        foreach (string file in imageFiles)
+        var metadataFiles = Directory.GetFiles(metadataPath, "*.json");
+        var loadedMetadata = new List<QuestionData>();
+
+        foreach (var file in metadataFiles)
         {
-            byte[] imageData = File.ReadAllBytes(file);
-            Texture2D texture = new Texture2D(2, 2);
-            if (texture.LoadImage(imageData))
+            string jsonContent = File.ReadAllText(file);
+            try
             {
-                texture.name = Path.GetFileNameWithoutExtension(file);
-                loadedImages.Add(texture);
+                // Replace numeric answers with string format before parsing
+                string processedJson = System.Text.RegularExpressions.Regex.Replace(
+                    jsonContent,
+                    @"""answer""\s*:\s*(\d+(?:\.\d+)?)",
+                    @"""answer"": ""$1"""
+                );
+
+                QuestionData data = JsonUtility.FromJson<QuestionData>(processedJson);
+                if (data != null)
+                {
+                    loadedMetadata.Add(data);
+                    Debug.Log($"Loaded metadata from {Path.GetFileName(file)} with {data.tasks.Length} tasks");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Failed to parse JSON file {file}: {e.Message}");
             }
         }
 
-        Debug.Log($"[ImageViewerController] Loaded {loadedImages.Count} images");
+        // Create pairs of images with questions
+        foreach (var metadata in loadedMetadata)
+        {
+            // Load the image
+            string imagePath = Path.Combine(Application.streamingAssetsPath, imageFolderPath, metadata.file);
+
+            byte[] imageData = File.ReadAllBytes(imagePath);
+            Texture2D texture = new Texture2D(2, 2);
+            if (!texture.LoadImage(imageData))
+            {
+                Debug.LogWarning($"Failed to load image: {imagePath}");
+                continue;
+            }
+
+            texture.name = Path.GetFileNameWithoutExtension(metadata.file);
+
+            // Create a pair for each task in the metadata
+            for (int i = 0; i < metadata.tasks.Length; i++)
+            {
+                imageQuestionPairs.Add(new ImageQuestionPair
+                {
+                    texture = texture,
+                    metadata = metadata,
+                    taskIndex = i,
+                    originalFileName = metadata.file
+                });
+
+                Debug.Log($"Task {i} for {metadata.file}: Question='{metadata.tasks[i].question}', Answer='{metadata.tasks[i].answer}', Panel='{metadata.tasks[i].panel}'");
+            }
+        }
+
+        // Randomize the order
+        ShuffleList(imageQuestionPairs);
+
+        Debug.Log($"[ImageViewerController] Loaded {imageQuestionPairs.Count} image-question pairs from {loadedMetadata.Count} metadata files");
+    }
+
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            T temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
     }
 
     private void DisplayCurrentImage()
     {
-        if (loadedImages.Count == 0) return;
+        if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count) return;
 
-        displayImage.texture = loadedImages[currentImageIndex];
-        imageCounter.text = $"{currentImageIndex + 1} / {loadedImages.Count}";
+        var currentPair = imageQuestionPairs[currentPairIndex];
+        displayImage.texture = currentPair.texture;
+        imageCounter.text = $"{currentPairIndex + 1} / {imageQuestionPairs.Count}";
 
         if (dataLogger != null && dataLogger.trackingManager != null)
         {
-            dataLogger.trackingManager.StartTrackingForImage(currentImageIndex);
+            dataLogger.trackingManager.StartTrackingForImage(currentPairIndex);
         }
     }
 
     public void NextImage()
     {
-        if (loadedImages.Count == 0) return;
+        if (imageQuestionPairs.Count == 0) return;
 
-        currentImageIndex++;
-        if (currentImageIndex >= loadedImages.Count)
+        currentPairIndex++;
+        if (currentPairIndex >= imageQuestionPairs.Count)
         {
             EndStudy();
             return;
@@ -217,8 +284,8 @@ public class ImageViewerController : MonoBehaviour
 
     public void PreviousImage()
     {
-        if (loadedImages.Count == 0) return;
-        currentImageIndex = (currentImageIndex - 1 + loadedImages.Count) % loadedImages.Count;
+        if (imageQuestionPairs.Count == 0) return;
+        currentPairIndex = (currentPairIndex - 1 + imageQuestionPairs.Count) % imageQuestionPairs.Count;
         DisplayCurrentImage();
     }
 
@@ -274,16 +341,23 @@ public class ImageViewerController : MonoBehaviour
 
     public string GetCurrentImageName()
     {
-        if (loadedImages.Count == 0 || currentImageIndex >= loadedImages.Count)
+        if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count)
             return "";
-        return loadedImages[currentImageIndex].name;
+        return imageQuestionPairs[currentPairIndex].originalFileName;
     }
 
-    public int GetCurrentImageIndex() => currentImageIndex;
+    public int GetCurrentImageIndex() => currentPairIndex;
 
     public int GetLoadedImagesCount()
     {
-        return loadedImages.Count;
+        return imageQuestionPairs.Count;
+    }
+
+    public ImageQuestionPair GetCurrentPair()
+    {
+        if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count)
+            return null;
+        return imageQuestionPairs[currentPairIndex];
     }
 
     public bool IsOpeningPanelActive()
@@ -309,8 +383,19 @@ public class ImageViewerController : MonoBehaviour
         if (rightTriggerAction != null)
             rightTriggerAction.action.Disable();
 
-        foreach (var t in loadedImages)
-            if (t) Destroy(t);
-        loadedImages.Clear();
+        // Clean up textures
+        var uniqueTextures = new HashSet<Texture2D>();
+        foreach (var pair in imageQuestionPairs)
+        {
+            if (pair.texture != null)
+                uniqueTextures.Add(pair.texture);
+        }
+
+        foreach (var texture in uniqueTextures)
+        {
+            Destroy(texture);
+        }
+
+        imageQuestionPairs.Clear();
     }
 }
