@@ -53,6 +53,7 @@ public class ImageViewerController : MonoBehaviour
     private StudyDataLogger dataLogger;
     private Image openingPanelImage;
     private bool triggerWasPressed = false;
+    private bool experimentControlled = false;
 
     private void Awake()
     {
@@ -66,6 +67,7 @@ public class ImageViewerController : MonoBehaviour
             openingPanelImage.raycastTarget = true;
         }
 
+        // Ensure panels are hidden initially
         if (sliderPanel != null) sliderPanel.SetActive(false);
         if (buttonPanel != null) buttonPanel.SetActive(false);
     }
@@ -98,7 +100,17 @@ public class ImageViewerController : MonoBehaviour
             timerContainer.SetActive(false);
         }
 
-        LoadImagesAndMetadata();
+        // Check if ExperimentManager exists
+        if (ExperimentManager.Instance != null)
+        {
+            experimentControlled = true;
+            // Don't load images - wait for ExperimentManager to provide them
+        }
+        else
+        {
+            // Only load images if not controlled by ExperimentManager (for standalone testing)
+            LoadImagesAndMetadata();
+        }
 
         // Enable input actions
         if (leftTriggerAction != null)
@@ -126,8 +138,52 @@ public class ImageViewerController : MonoBehaviour
         }
     }
 
+    // Public method for ExperimentManager to set pairs
+    public void SetImageQuestionPairs(List<ImageQuestionPair> pairs)
+    {
+        // Clear existing pairs
+        ClearExistingPairs();
+
+        // Set new pairs
+        imageQuestionPairs = pairs ?? new List<ImageQuestionPair>();
+        currentPairIndex = 0;
+
+        Debug.Log($"[ImageViewerController] Set {imageQuestionPairs.Count} image-question pairs");
+
+        // Update counter to show correct total
+        if (imageCounter != null && imageQuestionPairs.Count > 0)
+        {
+            imageCounter.text = $"1 / {imageQuestionPairs.Count}";
+        }
+    }
+
+    private void ClearExistingPairs()
+    {
+        if (imageQuestionPairs != null)
+        {
+            // Clean up existing textures
+            var uniqueTextures = new HashSet<Texture2D>();
+            foreach (var pair in imageQuestionPairs)
+            {
+                if (pair.texture != null)
+                    uniqueTextures.Add(pair.texture);
+            }
+            foreach (var texture in uniqueTextures)
+            {
+                if (texture != null) Destroy(texture);
+            }
+            imageQuestionPairs.Clear();
+        }
+    }
+
     private void StartStudy()
     {
+        if (imageQuestionPairs.Count == 0)
+        {
+            Debug.LogError("[ImageViewerController] No images loaded! Cannot start study.");
+            return;
+        }
+
         if (ambienceSource != null) ambienceSource.Play();
 
         // Hide opening panel
@@ -137,17 +193,6 @@ public class ImageViewerController : MonoBehaviour
         displayImage.gameObject.SetActive(true);
         imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
-
-        // Show HUD and timer
-        if (hudGameObject != null)
-        {
-            hudGameObject.SetActive(true);
-        }
-
-        if (timerContainer != null)
-        {
-            timerContainer.SetActive(true);
-        }
 
         // Initialize HUD components
         if (XPManager.Instance != null)
@@ -175,6 +220,7 @@ public class ImageViewerController : MonoBehaviour
 
     private void LoadImagesAndMetadata()
     {
+        // This method is now only called for standalone testing
         // Load all metadata files first
         string metadataPath = Path.Combine(Application.streamingAssetsPath, metadataFolderPath);
 
@@ -322,21 +368,16 @@ public class ImageViewerController : MonoBehaviour
 
         questionManager.enabled = false;
 
-        // Hide HUD and timer
-        if (hudGameObject != null)
-        {
-            hudGameObject.SetActive(false);
-        }
-
-        if (timerContainer != null)
-        {
-            timerContainer.SetActive(false);
-        }
-
         // Show ending panel
         endingPanel.SetActive(true);
 
         if (ambienceSource != null) ambienceSource.Stop();
+
+        // Notify ExperimentManager if it exists
+        if (ExperimentManager.Instance != null)
+        {
+            ExperimentManager.Instance.OnBlockComplete();
+        }
     }
 
     public string GetCurrentImageName()
@@ -384,18 +425,6 @@ public class ImageViewerController : MonoBehaviour
             rightTriggerAction.action.Disable();
 
         // Clean up textures
-        var uniqueTextures = new HashSet<Texture2D>();
-        foreach (var pair in imageQuestionPairs)
-        {
-            if (pair.texture != null)
-                uniqueTextures.Add(pair.texture);
-        }
-
-        foreach (var texture in uniqueTextures)
-        {
-            Destroy(texture);
-        }
-
-        imageQuestionPairs.Clear();
+        ClearExistingPairs();
     }
 }
