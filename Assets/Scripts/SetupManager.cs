@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -66,6 +67,18 @@ public class SetupManager : MonoBehaviour
         PlayerPrefs.Save();
 
         // Load experiment scene (Pilot Study for now)
-        SceneManager.LoadScene("Pilot");
+        StartCoroutine(LoadSceneWithProperLighting());
+    }
+
+    IEnumerator LoadSceneWithProperLighting()
+    {
+        // Load the scene
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Pilot", LoadSceneMode.Single);
+
+        // Wait until the scene is fully loaded
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
     }
 }
