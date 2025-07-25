@@ -90,11 +90,6 @@ public class BreakManager : MonoBehaviour
             {
                 int secondsRemaining = Mathf.CeilToInt(recommendedBreakTime - breakTimer);
                 timerText.text = $"Break time: {secondsRemaining}s";
-
-                if (breakTimer >= minimumBreakTime)
-                {
-                    timerText.text += "\n\nYou may continue when ready.";
-                }
             }
 
             // Enable continue button after minimum time
