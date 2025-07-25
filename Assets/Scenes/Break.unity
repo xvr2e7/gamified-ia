@@ -354,10 +354,6 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1447472418}
-    - target: {fileID: 265937941300513740, guid: 819605e152cbb4304bd9a85cfac1d480, type: 3}
-      propertyPath: m_RenderMode
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2601352581140437750, guid: 819605e152cbb4304bd9a85cfac1d480, type: 3}
       propertyPath: m_Name
       value: Break
@@ -444,7 +440,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9157682357151607003, guid: 819605e152cbb4304bd9a85cfac1d480, type: 3}
       propertyPath: recommendedBreakTime
-      value: 120
+      value: 240
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

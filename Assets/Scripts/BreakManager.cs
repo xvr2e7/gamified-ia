@@ -13,7 +13,7 @@ public class BreakManager : MonoBehaviour
 
     [Header("Break Settings")]
     [SerializeField] private float minimumBreakTime = 10f;
-    [SerializeField] private float recommendedBreakTime = 120f;
+    [SerializeField] private float recommendedBreakTime = 240f;
 
     private int currentCondition;
     private int participantID;
@@ -48,16 +48,7 @@ public class BreakManager : MonoBehaviour
 
     void ShowBreakInfo()
     {
-        string[] conditionNames = { "CTRL", "BASE", "TIME", "FEED", "FULL" };
-        int total = conditionNames.Length;
-
-        statusText.text += "Please take a short break.\n\n";
-
-        // Next condition: valid only while currentCondition < total
-        string next = currentCondition < total
-            ? conditionNames[currentCondition]
-            : "Complete";
-        statusText.text += $"Next condition: {next}";
+        statusText.text += "Please take a short break and\nfill out the questionnaire.\n";
     }
 
 

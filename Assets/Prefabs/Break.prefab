@@ -322,7 +322,7 @@ Canvas:
   m_GameObject: {fileID: 2601352581140437750}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -392,7 +392,7 @@ MonoBehaviour:
   timerText: {fileID: 1858833518321329739}
   continueButton: {fileID: 1463127713319465350}
   minimumBreakTime: 10
-  recommendedBreakTime: 30
+  recommendedBreakTime: 120
 --- !u!222 &1947721567382419412
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -720,8 +720,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50}
-  m_SizeDelta: {x: 500, y: 50}
+  m_AnchoredPosition: {x: 0, y: -100}
+  m_SizeDelta: {x: 600, y: 50}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &3239468522458203257
 CanvasRenderer:
