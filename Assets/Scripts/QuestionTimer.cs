@@ -106,6 +106,13 @@ public class QuestionTimer : MonoBehaviour
 
     public void StartTimer()
     {
+        // Safety check
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning("[QuestionTimer] Don't start timer - GameObject is inactive");
+            return;
+        }
+
         StopTimer(); // Stop any existing timer
 
         currentTime = questionTimeLimit;
@@ -222,6 +229,8 @@ public class QuestionTimer : MonoBehaviour
 
     private void EnterUrgencyMode()
     {
+        if (!gameObject.activeInHierarchy) return; // Safety check
+
         isInUrgencyMode = true;
 
         PlaySound(urgencySound);

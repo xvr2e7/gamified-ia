@@ -41,8 +41,25 @@ public class QuestionDisplayManager : MonoBehaviour
             LoadAndDisplayQuestion();
         }
 
-        if (QuestionTimer.Instance != null)
-            QuestionTimer.Instance.StartTimer();
+        // Check if QuestionTimer should be started based on current condition
+        if (ExperimentManager.Instance != null)
+        {
+            if (ExperimentManager.Instance.IsComponentActiveForCondition("QuestionTimer"))
+            {
+                if (QuestionTimer.Instance != null && QuestionTimer.Instance.gameObject.activeInHierarchy)
+                {
+                    QuestionTimer.Instance.StartTimer();
+                }
+            }
+        }
+        else
+        {
+            // Standalone mode - check if timer is active
+            if (QuestionTimer.Instance != null && QuestionTimer.Instance.gameObject.activeInHierarchy)
+            {
+                QuestionTimer.Instance.StartTimer();
+            }
+        }
     }
 
     void LoadAndDisplayQuestion()

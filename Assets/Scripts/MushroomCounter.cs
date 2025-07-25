@@ -52,7 +52,17 @@ public class MushroomCounter : MonoBehaviour
         if (baseCount > mushroomCount)
         {
             mushroomCount = baseCount;
-            StartCoroutine(AnimateCollection());
+
+            // Safety check before starting coroutine
+            if (gameObject.activeInHierarchy)
+            {
+                StartCoroutine(AnimateCollection());
+            }
+            else
+            {
+                // Just update display without animation if inactive
+                UpdateDisplay();
+            }
         }
         else if (newDisplayedCount != GetDisplayedMushroomCount())
         {

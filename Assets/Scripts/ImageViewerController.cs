@@ -89,17 +89,6 @@ public class ImageViewerController : MonoBehaviour
         imageCounter.gameObject.SetActive(false);
         questionPanel.SetActive(false);
 
-        // Hide HUD and timer during opening panel
-        if (hudGameObject != null)
-        {
-            hudGameObject.SetActive(false);
-        }
-
-        if (timerContainer != null)
-        {
-            timerContainer.SetActive(false);
-        }
-
         // Check if ExperimentManager exists
         if (ExperimentManager.Instance != null)
         {
@@ -180,7 +169,7 @@ public class ImageViewerController : MonoBehaviour
     {
         if (imageQuestionPairs.Count == 0)
         {
-            Debug.LogError("[ImageViewerController] No images loaded! Cannot start study.");
+            Debug.LogError("No image-question pairs loaded. Cannot start study.");
             return;
         }
 
@@ -194,18 +183,42 @@ public class ImageViewerController : MonoBehaviour
         imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
 
-        // Initialize HUD components
-        if (XPManager.Instance != null)
+        // Initialize HUD components - check both if they exist AND if they should be active for current condition
+        if (ExperimentManager.Instance != null)
         {
-            XPManager.Instance.StartCounting();
+            // Only initialize XPManager if it should be active for current condition
+            if (ExperimentManager.Instance.IsComponentActiveForCondition("XPManager"))
+            {
+                if (XPManager.Instance != null && XPManager.Instance.gameObject.activeInHierarchy)
+                {
+                    XPManager.Instance.StartCounting();
+                }
+            }
+
+            // Only initialize StreakMultiplier if it should be active for current condition
+            if (ExperimentManager.Instance.IsComponentActiveForCondition("StreakMultiplier"))
+            {
+                if (StreakMultiplier.Instance != null && StreakMultiplier.Instance.gameObject.activeInHierarchy)
+                {
+                    StreakMultiplier.Instance.ResetStreak();
+                }
+            }
+        }
+        else
+        {
+            // Standalone mode - check if objects are active
+            if (XPManager.Instance != null && XPManager.Instance.gameObject.activeInHierarchy)
+            {
+                XPManager.Instance.StartCounting();
+            }
+
+            if (StreakMultiplier.Instance != null && StreakMultiplier.Instance.gameObject.activeInHierarchy)
+            {
+                StreakMultiplier.Instance.ResetStreak();
+            }
         }
 
-        if (StreakMultiplier.Instance != null)
-        {
-            StreakMultiplier.Instance.ResetStreak();
-        }
-
-        // Start question system and timer
+        // Start question system
         if (questionManager != null)
         {
             questionManager.enabled = true;

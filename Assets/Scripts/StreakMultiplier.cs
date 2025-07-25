@@ -154,6 +154,13 @@ public class StreakMultiplier : MonoBehaviour
 
     private void PlayStreakIncreaseEffect()
     {
+        // Safety check
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning("[StreakMultiplier] Don't play effect - GameObject is inactive");
+            return;
+        }
+
         // Stop any existing pulse
         if (pulseCoroutine != null)
         {

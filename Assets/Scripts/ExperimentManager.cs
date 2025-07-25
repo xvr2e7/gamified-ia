@@ -108,14 +108,14 @@ public class ExperimentManager : MonoBehaviour
 
         currentCondition = conditionSequence[currentConditionIndex];
 
-        // Generate trials first
+        // Apply condition settings FIRST
+        ApplyConditionSettings(currentCondition);
+
+        // Generate trials after settings are applied
         currentTrials = GenerateTrials();
 
-        // Set the image pairs BEFORE applying condition settings
+        // Set the image pairs after condition settings are applied
         PrepareImageViewer();
-
-        // Apply condition settings after images are loaded
-        ApplyConditionSettings(currentCondition);
 
         Debug.Log($"[ExperimentManager] Starting {currentCondition} block ({currentConditionIndex + 1}/{conditionSequence.Count}) with {currentTrials.Count} trials");
     }
@@ -155,50 +155,54 @@ public class ExperimentManager : MonoBehaviour
 
     private void ApplyConditionSettings(Condition cond)
     {
-        // Reset all to inactive first
-        flatStimulusCanvas?.SetActive(false);
-        HUD?.SetActive(false);
-        environment?.SetActive(false);
+        // Ensure all HUD sub-elements are inactive BEFORE deactivating parent
+        if (xpContainer != null) xpContainer.SetActive(false);
+        if (streakMultiplier != null) streakMultiplier.SetActive(false);
+        if (timeContainer != null) timeContainer.SetActive(false);
+
+        // Reset all parents to inactive
+        if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(false);
+        if (HUD != null) HUD.SetActive(false);
+        if (environment != null) environment.SetActive(false);
 
         // Apply condition-specific settings
         switch (cond)
         {
             case Condition.CTRL:
-                flatStimulusCanvas?.SetActive(true);
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 // No HUD, no environment
                 break;
 
             case Condition.BASE:
-                flatStimulusCanvas?.SetActive(true);
-                environment?.SetActive(true);
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(true);
                 // No HUD
                 break;
 
             case Condition.TIME:
-                flatStimulusCanvas?.SetActive(true);
-                environment?.SetActive(true);
-                HUD?.SetActive(true);
-                xpContainer?.SetActive(true);
-                streakMultiplier?.SetActive(false);
-                timeContainer?.SetActive(true);
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(true);
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(true);
+                if (timeContainer != null) timeContainer.SetActive(true);
+                // streakMultiplier stays inactive
                 break;
 
             case Condition.FEED:
-                flatStimulusCanvas?.SetActive(true);
-                environment?.SetActive(true);
-                HUD?.SetActive(true);
-                xpContainer?.SetActive(true);
-                streakMultiplier?.SetActive(false);
-                timeContainer?.SetActive(false);
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(true);
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(true);
+                // timeContainer and streakMultiplier stay inactive
                 break;
 
             case Condition.FULL:
-                flatStimulusCanvas?.SetActive(true);
-                environment?.SetActive(true);
-                HUD?.SetActive(true);
-                xpContainer?.SetActive(true);
-                streakMultiplier?.SetActive(true);
-                timeContainer?.SetActive(true);
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(true);
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(true);
+                if (streakMultiplier != null) streakMultiplier.SetActive(true);
+                if (timeContainer != null) timeContainer.SetActive(true);
                 break;
         }
     }
@@ -385,4 +389,26 @@ public class ExperimentManager : MonoBehaviour
     public Condition GetCurrentCondition() => currentCondition;
 
     public int GetParticipantID() => participantID;
+
+    public bool IsComponentActiveForCondition(string componentName)
+    {
+        switch (currentCondition)
+        {
+            case Condition.CTRL:
+            case Condition.BASE:
+                return false;
+
+            case Condition.TIME:
+                return componentName == "XPManager" || componentName == "QuestionTimer";
+
+            case Condition.FEED:
+                return componentName == "XPManager";
+
+            case Condition.FULL:
+                return true;
+
+            default:
+                return false;
+        }
+    }
 }
