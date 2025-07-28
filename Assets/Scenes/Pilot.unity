@@ -616,6 +616,10 @@ PrefabInstance:
       propertyPath: timerContainer
       value: 
       objectReference: {fileID: 1065769655}
+    - target: {fileID: 3581946587275532721, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3620752070129720133, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: m_Name
       value: FlatStimulusCanvas

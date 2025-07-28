@@ -26,7 +26,7 @@ public class BreakManager : MonoBehaviour
         currentCondition = PlayerPrefs.GetInt("CurrentCondition", 0);
 
         // Check if experiment is complete
-        if (currentCondition >= 5)
+        if (currentCondition >= 6)
         {
             ShowExperimentComplete();
             return;
