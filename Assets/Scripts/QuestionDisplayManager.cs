@@ -29,6 +29,7 @@ public class QuestionDisplayManager : MonoBehaviour
     private TextMeshProUGUI valueText;
 
     private bool isPracticeMode = false;
+    private bool isSimpleFeedbackMode = false;
     private bool showingFeedback = false;
 
     void Awake()
@@ -183,6 +184,12 @@ public class QuestionDisplayManager : MonoBehaviour
 
     public void ShowFeedback(string userAnswer)
     {
+        if (isSimpleFeedbackMode)
+        {
+            ShowSimpleFeedback(userAnswer);
+            return;
+        }
+
         if (!isPracticeMode || feedbackPanel == null || feedbackText == null)
             return;
 
@@ -265,6 +272,59 @@ public class QuestionDisplayManager : MonoBehaviour
 
             if (QuestionTimer.Instance != null)
                 QuestionTimer.Instance.StartTimer();
+        }
+    }
+
+    public void SetSimpleFeedbackMode(bool enabled)
+    {
+        isSimpleFeedbackMode = enabled;
+        showingFeedback = false;
+    }
+
+    public void ShowSimpleFeedback(string userAnswer)
+    {
+        if (!isSimpleFeedbackMode || feedbackPanel == null || feedbackText == null)
+            return;
+
+        showingFeedback = true;
+
+        // Hide option panels
+        sliderPanel.SetActive(false);
+        buttonPanel.SetActive(false);
+
+        // Show feedback panel
+        feedbackPanel.SetActive(true);
+
+        // Check if answer is correct
+        string correctAnswer = GetCorrectAnswer();
+        bool isCorrect = false;
+
+        if (currentTask?.panel == "slider")
+        {
+            // Parse both user answer and correct answer as floats
+            if (float.TryParse(userAnswer, out float userValue) &&
+                float.TryParse(correctAnswer, out float correctValue))
+            {
+                // Check if within ±5 tolerance
+                isCorrect = Mathf.Abs(userValue - correctValue) <= 5f;
+            }
+        }
+        else
+        {
+            // Button questions - exact match required
+            isCorrect = userAnswer.Equals(correctAnswer, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Show only "Correct!" or "Incorrect!" - no correct answer revealed
+        if (isCorrect)
+        {
+            feedbackText.text = "Correct!";
+            feedbackText.color = Color.green;
+        }
+        else
+        {
+            feedbackText.text = "Incorrect!";
+            feedbackText.color = Color.red;
         }
     }
 

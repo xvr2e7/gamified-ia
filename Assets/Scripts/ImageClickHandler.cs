@@ -79,7 +79,9 @@ public class ImageClickHandler : MonoBehaviour
     {
         // Practice mode check for feedback state
         bool isPracticeMode = ExperimentManager.Instance != null && ExperimentManager.Instance.IsPracticeMode();
-        if (isPracticeMode && questionManager != null && questionManager.IsShowingFeedback())
+        bool isBAFEMode = ExperimentManager.Instance != null && ExperimentManager.Instance.GetCurrentCondition() == ExperimentManager.Condition.BAFE;
+
+        if ((isPracticeMode || isBAFEMode) && questionManager != null && questionManager.IsShowingFeedback())
         {
             // Hide feedback and continue
             questionManager.HideFeedbackAndContinue();
@@ -148,8 +150,7 @@ public class ImageClickHandler : MonoBehaviour
             );
         }
 
-        // Practice mode: show feedback instead of advancing
-        if (isPracticeMode && questionManager != null)
+        if ((isPracticeMode || isBAFEMode) && questionManager != null)
         {
             string userAnswer = "";
             if (panelType == "slider")

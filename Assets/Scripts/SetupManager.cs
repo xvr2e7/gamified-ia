@@ -21,7 +21,7 @@ public class SetupManager : MonoBehaviour
         {
             participantDropdown.ClearOptions();
             var options = new List<string>();
-            for (int i = 1; i <= 5; i++)
+            for (int i = 1; i <= 6; i++)
             {
                 options.Add($"Participant {i}");
             }
@@ -39,18 +39,19 @@ public class SetupManager : MonoBehaviour
         OnParticipantChanged(0);
     }
 
+
     void OnParticipantChanged(int index)
     {
         selectedParticipantID = index + 1;
 
-        // Show the sequence for this participant
         string[] sequences = new string[]
         {
-            "CTRL → BASE → TIME → FEED → FULL",
-            "BASE → TIME → FEED → FULL → CTRL",
-            "TIME → FEED → FULL → CTRL → BASE",
-            "FEED → FULL → CTRL → BASE → TIME",
-            "FULL → CTRL → BASE → TIME → FEED"
+        "CTRL → BASE → BAFE → TIME → FEED → FULL",
+        "BASE → BAFE → TIME → FEED → FULL → CTRL",
+        "BAFE → TIME → FEED → FULL → CTRL → BASE",
+        "TIME → FEED → FULL → CTRL → BASE → BAFE",
+        "FEED → FULL → CTRL → BASE → BAFE → TIME",
+        "FULL → CTRL → BASE → BAFE → TIME → FEED"
         };
 
         if (sequenceText != null)

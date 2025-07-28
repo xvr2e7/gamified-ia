@@ -10,7 +10,7 @@ public class ExperimentManager : MonoBehaviour
 {
     public static ExperimentManager Instance { get; private set; }
 
-    public enum Condition { PRACTICE, CTRL, BASE, TIME, FEED, FULL }
+    public enum Condition { PRACTICE, CTRL, BASE, BAFE, TIME, FEED, FULL }
 
     [Header("UI Parents")]
     [SerializeField] private GameObject flatStimulusCanvas;
@@ -28,11 +28,12 @@ public class ExperimentManager : MonoBehaviour
 
     private readonly Condition[][] latinSquare = new Condition[][]
     {
-        new[]{ Condition.CTRL, Condition.BASE, Condition.TIME, Condition.FEED, Condition.FULL },
-        new[]{ Condition.BASE, Condition.TIME, Condition.FEED, Condition.FULL, Condition.CTRL },
-        new[]{ Condition.TIME, Condition.FEED, Condition.FULL, Condition.CTRL, Condition.BASE },
-        new[]{ Condition.FEED, Condition.FULL, Condition.CTRL, Condition.BASE, Condition.TIME },
-        new[]{ Condition.FULL, Condition.CTRL, Condition.BASE, Condition.TIME, Condition.FEED }
+        new[]{ Condition.CTRL, Condition.BASE, Condition.BAFE, Condition.TIME, Condition.FEED, Condition.FULL },
+        new[]{ Condition.BASE, Condition.BAFE, Condition.TIME, Condition.FEED, Condition.FULL, Condition.CTRL },
+        new[]{ Condition.BAFE, Condition.TIME, Condition.FEED, Condition.FULL, Condition.CTRL, Condition.BASE },
+        new[]{ Condition.TIME, Condition.FEED, Condition.FULL, Condition.CTRL, Condition.BASE, Condition.BAFE },
+        new[]{ Condition.FEED, Condition.FULL, Condition.CTRL, Condition.BASE, Condition.BAFE, Condition.TIME },
+        new[]{ Condition.FULL, Condition.CTRL, Condition.BASE, Condition.BAFE, Condition.TIME, Condition.FEED }
     };
 
     private List<Condition> conditionSequence;
@@ -174,6 +175,16 @@ public class ExperimentManager : MonoBehaviour
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 if (environment != null) environment.SetActive(true);
                 if (HUD != null) HUD.SetActive(false);
+                break;
+
+            case Condition.BAFE:
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(true);
+                if (HUD != null) HUD.SetActive(false);
+
+                // Enable simple feedback mode
+                if (questionManager != null)
+                    questionManager.SetSimpleFeedbackMode(true);
                 break;
 
             case Condition.TIME:
@@ -437,6 +448,7 @@ public class ExperimentManager : MonoBehaviour
         {
             case Condition.CTRL:
             case Condition.BASE:
+            case Condition.BAFE:
                 return false;
 
             case Condition.TIME:
