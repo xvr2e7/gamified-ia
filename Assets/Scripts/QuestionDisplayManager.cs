@@ -197,27 +197,54 @@ public class QuestionDisplayManager : MonoBehaviour
 
         // Check if answer is correct
         string correctAnswer = GetCorrectAnswer();
+        bool isCorrect = false;
 
-        string displayAnswer = correctAnswer;
         if (currentTask?.panel == "slider")
         {
-            if (float.TryParse(correctAnswer, out float floatAnswer))
+            // Parse both user answer and correct answer as floats
+            if (float.TryParse(userAnswer, out float userValue) &&
+                float.TryParse(correctAnswer, out float correctValue))
             {
-                displayAnswer = Mathf.RoundToInt(floatAnswer).ToString();
+                // Check if within ±5 tolerance
+                isCorrect = Mathf.Abs(userValue - correctValue) <= 5f;
+
+                // Format feedback text
+                int roundedCorrect = Mathf.RoundToInt(correctValue);
+                int roundedUser = Mathf.RoundToInt(userValue);
+
+                if (isCorrect)
+                {
+                    feedbackText.text = $"Correct! The correct answer is: {roundedCorrect}. Your answer was {roundedUser}.";
+                    feedbackText.color = Color.green;
+                }
+                else
+                {
+                    feedbackText.text = $"Incorrect. The correct answer is: {roundedCorrect}.";
+                    feedbackText.color = Color.red;
+                }
             }
-        }
-
-        bool isCorrect = userAnswer.Equals(correctAnswer, System.StringComparison.OrdinalIgnoreCase);
-
-        if (isCorrect)
-        {
-            feedbackText.text = "Correct!";
-            feedbackText.color = Color.green;
+            else
+            {
+                // Fallback if parsing fails
+                feedbackText.text = $"Incorrect. The correct answer is: {correctAnswer}.";
+                feedbackText.color = Color.red;
+            }
         }
         else
         {
-            feedbackText.text = $"Incorrect. The correct answer is: {displayAnswer}";
-            feedbackText.color = Color.red;
+            // Button questions - exact match required
+            isCorrect = userAnswer.Equals(correctAnswer, System.StringComparison.OrdinalIgnoreCase);
+
+            if (isCorrect)
+            {
+                feedbackText.text = "Correct!";
+                feedbackText.color = Color.green;
+            }
+            else
+            {
+                feedbackText.text = $"Incorrect. The correct answer is: {correctAnswer}";
+                feedbackText.color = Color.red;
+            }
         }
     }
 
