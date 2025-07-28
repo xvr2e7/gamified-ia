@@ -10,7 +10,7 @@ public class ExperimentManager : MonoBehaviour
 {
     public static ExperimentManager Instance { get; private set; }
 
-    public enum Condition { CTRL, BASE, TIME, FEED, FULL }
+    public enum Condition { PRACTICE, CTRL, BASE, TIME, FEED, FULL }
 
     [Header("UI Parents")]
     [SerializeField] private GameObject flatStimulusCanvas;
@@ -39,6 +39,7 @@ public class ExperimentManager : MonoBehaviour
     private int participantID;
     private int currentConditionIndex;
     private Condition currentCondition;
+    private bool isPracticeMode = false;
 
     [Serializable]
     private class Trial
@@ -66,9 +67,23 @@ public class ExperimentManager : MonoBehaviour
             return;
         }
 
-        participantID = PlayerPrefs.GetInt("ParticipantID", 1);
-        currentConditionIndex = PlayerPrefs.GetInt("CurrentCondition", 0);
-        conditionSequence = latinSquare[participantID - 1].ToList();
+        // Check if we should start in practice mode
+        isPracticeMode = PlayerPrefs.GetInt("StartPractice", 0) == 1;
+
+        if (isPracticeMode)
+        {
+            // Clear the practice flag
+            PlayerPrefs.SetInt("StartPractice", 0);
+            PlayerPrefs.Save();
+            currentCondition = Condition.PRACTICE;
+            currentConditionIndex = -1; // Special index for practice
+        }
+        else
+        {
+            participantID = PlayerPrefs.GetInt("ParticipantID", 1);
+            currentConditionIndex = PlayerPrefs.GetInt("CurrentCondition", 0);
+            conditionSequence = latinSquare[participantID - 1].ToList();
+        }
     }
 
     void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
@@ -88,95 +103,77 @@ public class ExperimentManager : MonoBehaviour
 
     private void BeginCondition()
     {
-        if (currentConditionIndex >= conditionSequence.Count)
+        if (!isPracticeMode && currentConditionIndex >= conditionSequence.Count)
         {
             EndExperiment();
             return;
         }
 
-        // Use coroutine to ensure proper initialization order
         StartCoroutine(InitializeCondition());
     }
 
     private System.Collections.IEnumerator InitializeCondition()
     {
-        // Wait one frame to ensure scene is fully loaded
         yield return null;
 
-        // Find and assign references
         ResolveReferences();
 
-        currentCondition = conditionSequence[currentConditionIndex];
+        if (!isPracticeMode)
+        {
+            currentCondition = conditionSequence[currentConditionIndex];
+        }
 
-        // Apply condition settings FIRST
         ApplyConditionSettings(currentCondition);
-
-        // Generate trials after settings are applied
         currentTrials = GenerateTrials();
-
-        // Set the image pairs after condition settings are applied
         PrepareImageViewer();
 
-        Debug.Log($"[ExperimentManager] Starting {currentCondition} block ({currentConditionIndex + 1}/{conditionSequence.Count}) with {currentTrials.Count} trials");
+        string conditionName = isPracticeMode ? "PRACTICE" : currentCondition.ToString();
+        Debug.Log($"[ExperimentManager] Starting {conditionName} block with {currentTrials.Count} trials");
     }
 
     private void ResolveReferences()
     {
-        // Try to find references if not already assigned
         if (imageViewer == null) imageViewer = FindObjectOfType<ImageViewerController>();
         if (questionManager == null) questionManager = FindObjectOfType<QuestionDisplayManager>();
 
-        // Find GameObjects by name
         if (flatStimulusCanvas == null) flatStimulusCanvas = GameObject.Find("FlatStimulusCanvas");
         if (HUD == null) HUD = GameObject.Find("HUD");
         if (environment == null) environment = GameObject.Find("Environment");
 
-        // Find HUD sub-elements
         if (HUD != null)
         {
             Transform hudTransform = HUD.transform;
-            if (xpContainer == null)
-            {
-                Transform xpTransform = hudTransform.Find("XPContainer");
-                if (xpTransform != null) xpContainer = xpTransform.gameObject;
-            }
-            if (streakMultiplier == null)
-            {
-                Transform streakTransform = hudTransform.Find("StreakMultiplier");
-                if (streakTransform != null) streakMultiplier = streakTransform.gameObject;
-            }
-            if (timeContainer == null)
-            {
-                Transform timeTransform = hudTransform.Find("TimeContainer");
-                if (timeTransform != null) timeContainer = timeTransform.gameObject;
-            }
+            if (xpContainer == null) xpContainer = hudTransform.Find("XPContainer")?.gameObject;
+            if (streakMultiplier == null) streakMultiplier = hudTransform.Find("StreakMultiplier")?.gameObject;
+            if (timeContainer == null) timeContainer = hudTransform.Find("TimeContainer")?.gameObject;
         }
     }
 
-    private void ApplyConditionSettings(Condition cond)
+    private void ApplyConditionSettings(Condition condition)
     {
-        // Ensure all HUD sub-elements are inactive BEFORE deactivating parent
-        if (xpContainer != null) xpContainer.SetActive(false);
-        if (streakMultiplier != null) streakMultiplier.SetActive(false);
-        if (timeContainer != null) timeContainer.SetActive(false);
-
-        // Reset all parents to inactive
-        if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(false);
-        if (HUD != null) HUD.SetActive(false);
-        if (environment != null) environment.SetActive(false);
-
-        // Apply condition-specific settings
-        switch (cond)
+        switch (condition)
         {
+            case Condition.PRACTICE:
+                // Practice mode - similar to CTRL but with feedback enabled
+                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
+                if (environment != null) environment.SetActive(false);
+                if (HUD != null) HUD.SetActive(false);
+
+                // Enable feedback mode in question manager
+                if (questionManager != null)
+                    questionManager.SetPracticeMode(true);
+                break;
+
             case Condition.CTRL:
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                // No HUD, no environment
+                if (environment != null) environment.SetActive(false);
+                if (HUD != null) HUD.SetActive(false);
                 break;
 
             case Condition.BASE:
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 if (environment != null) environment.SetActive(true);
-                // No HUD
+                if (HUD != null) HUD.SetActive(false);
                 break;
 
             case Condition.TIME:
@@ -184,8 +181,8 @@ public class ExperimentManager : MonoBehaviour
                 if (environment != null) environment.SetActive(true);
                 if (HUD != null) HUD.SetActive(true);
                 if (xpContainer != null) xpContainer.SetActive(true);
+                if (streakMultiplier != null) streakMultiplier.SetActive(false);
                 if (timeContainer != null) timeContainer.SetActive(true);
-                // streakMultiplier stays inactive
                 break;
 
             case Condition.FEED:
@@ -193,7 +190,8 @@ public class ExperimentManager : MonoBehaviour
                 if (environment != null) environment.SetActive(true);
                 if (HUD != null) HUD.SetActive(true);
                 if (xpContainer != null) xpContainer.SetActive(true);
-                // timeContainer and streakMultiplier stay inactive
+                if (streakMultiplier != null) streakMultiplier.SetActive(false);
+                if (timeContainer != null) timeContainer.SetActive(false);
                 break;
 
             case Condition.FULL:
@@ -210,47 +208,41 @@ public class ExperimentManager : MonoBehaviour
     private List<Trial> GenerateTrials()
     {
         var allTrials = new List<Trial>();
-        string metaPath = Path.Combine(Application.streamingAssetsPath, "Metadata");
 
-        // Load all metadata files
-        foreach (var file in Directory.GetFiles(metaPath, "*.json"))
+        // Determine which folder to read from
+        string folderName = isPracticeMode ? "Practice" : "Metadata";
+        string metaPath = Path.Combine(Application.streamingAssetsPath, folderName);
+
+        // For practice mode, only load the specific file
+        if (isPracticeMode)
         {
-            try
+            string practiceFile = Path.Combine(metaPath, "Metadata", "Habitat_vs_class_bar.json");
+            if (File.Exists(practiceFile))
             {
-                var json = File.ReadAllText(file);
-                var data = JsonUtility.FromJson<QuestionData>(json);
-                if (data == null) continue;
-
-                string encodingType = data.encoding.ToLower();
-
-                // Create trials for each task in the metadata
-                for (int i = 0; i < data.tasks.Length; i++)
-                {
-                    string key = $"{data.file}_{i}";
-
-                    // Skip if already used in previous conditions
-                    if (usedKeys.Contains(key)) continue;
-
-                    // Use the task type from metadata directly
-                    string taskLevel = data.tasks[i].type.ToLower(); // "low" or "high"
-
-                    allTrials.Add(new Trial
-                    {
-                        imageName = data.file,
-                        taskIndex = i,
-                        encodingType = encodingType,
-                        taskLevel = taskLevel,
-                        metadata = data
-                    });
-                }
+                LoadTrialsFromFile(practiceFile, allTrials);
             }
-            catch (Exception e)
+            else
             {
-                Debug.LogError($"Failed to parse JSON file {file}: {e.Message}");
+                Debug.LogError($"[ExperimentManager] Practice file not found: {practiceFile}");
+            }
+        }
+        else
+        {
+            // Regular mode - load all files
+            foreach (var file in Directory.GetFiles(metaPath, "*.json"))
+            {
+                LoadTrialsFromFile(file, allTrials);
             }
         }
 
-        // Select trials for this condition: 3 low + 3 high for each encoding type
+        // For practice mode, shuffle all trials and return
+        if (isPracticeMode)
+        {
+            ShuffleList(allTrials);
+            return allTrials;
+        }
+
+        // Regular experiment logic - Select 3 low + 3 high for each encoding type
         var selectedTrials = new List<Trial>();
 
         foreach (var encoding in new[] { "bar", "pie", "stack" })
@@ -273,10 +265,45 @@ public class ExperimentManager : MonoBehaviour
         }
 
         // Shuffle the final selection
-        Shuffle(selectedTrials);
+        ShuffleList(selectedTrials);
 
         Debug.Log($"[ExperimentManager] Generated {selectedTrials.Count} trials for condition {currentCondition}");
         return selectedTrials;
+    }
+
+    private void LoadTrialsFromFile(string file, List<Trial> allTrials)
+    {
+        try
+        {
+            var json = File.ReadAllText(file);
+            var data = JsonUtility.FromJson<QuestionData>(json);
+            if (data == null) return;
+
+            string encodingType = data.encoding.ToLower();
+
+            for (int i = 0; i < data.tasks.Length; i++)
+            {
+                string key = $"{data.file}_{i}";
+
+                // Skip if already used (except in practice mode)
+                if (!isPracticeMode && usedKeys.Contains(key)) continue;
+
+                string taskLevel = data.tasks[i].type.ToLower();
+
+                allTrials.Add(new Trial
+                {
+                    imageName = data.file,
+                    taskIndex = i,
+                    encodingType = encodingType,
+                    taskLevel = taskLevel,
+                    metadata = data
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[ExperimentManager] Failed to load trial file {file}: {e.Message}");
+        }
     }
 
     private List<Trial> SelectRandom(List<Trial> source, int count)
@@ -301,12 +328,14 @@ public class ExperimentManager : MonoBehaviour
         return result;
     }
 
-    private void Shuffle<T>(List<T> list)
+    private void ShuffleList<T>(List<T> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
+            int randomIndex = Random.Range(0, i + 1);
+            T temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
         }
     }
 
@@ -318,13 +347,12 @@ public class ExperimentManager : MonoBehaviour
             return;
         }
 
-        // Create the list of image-question pairs
         var pairs = new List<ImageViewerController.ImageQuestionPair>();
+        string imageFolder = isPracticeMode ? "Practice/Stimulus" : "Stimulus";
 
         foreach (var trial in currentTrials)
         {
-            // Load texture
-            string imagePath = Path.Combine(Application.streamingAssetsPath, "Stimulus", trial.imageName);
+            string imagePath = Path.Combine(Application.streamingAssetsPath, imageFolder, trial.imageName);
 
             if (!File.Exists(imagePath))
             {
@@ -343,7 +371,6 @@ public class ExperimentManager : MonoBehaviour
 
             texture.name = Path.GetFileNameWithoutExtension(trial.imageName);
 
-            // Create the pair
             pairs.Add(new ImageViewerController.ImageQuestionPair
             {
                 texture = texture,
@@ -353,15 +380,36 @@ public class ExperimentManager : MonoBehaviour
             });
         }
 
-        // Provide these pairs to the ImageViewerController
         imageViewer.SetImageQuestionPairs(pairs);
+        Debug.Log($"[ExperimentManager] Prepared {pairs.Count} image-question pairs");
+    }
 
-        Debug.Log($"[ExperimentManager] Prepared {pairs.Count} image-question pairs for ImageViewerController");
+    private void EndExperiment()
+    {
+        Debug.Log("[ExperimentManager] Experiment completed!");
+        PlayerPrefs.SetInt("CurrentCondition", 0);
+        PlayerPrefs.Save();
+        SceneManager.LoadScene("Setup");
     }
 
     public void OnBlockComplete()
     {
-        // Called when all trials in current condition are complete
+        if (isPracticeMode)
+        {
+            // Practice complete, now start the real experiment
+            isPracticeMode = false;
+            participantID = PlayerPrefs.GetInt("ParticipantID", 1);
+            currentConditionIndex = 0;
+            conditionSequence = latinSquare[participantID - 1].ToList();
+            PlayerPrefs.SetInt("CurrentCondition", 0);
+            PlayerPrefs.Save();
+
+            // Reload scene to start first condition
+            SceneManager.LoadScene("Pilot");
+            return;
+        }
+
+        // Regular block complete logic
         currentConditionIndex++;
         PlayerPrefs.SetInt("CurrentCondition", currentConditionIndex);
         PlayerPrefs.Save();
@@ -372,26 +420,19 @@ public class ExperimentManager : MonoBehaviour
         }
         else
         {
-            // Load break scene
             SceneManager.LoadScene("Break");
         }
     }
 
-    private void EndExperiment()
-    {
-        Debug.Log("[ExperimentManager] Experiment completed!");
-        PlayerPrefs.SetInt("CurrentCondition", 0); // Reset for next participant
-        PlayerPrefs.Save();
-
-        SceneManager.LoadScene("Setup");
-    }
-
     public Condition GetCurrentCondition() => currentCondition;
-
     public int GetParticipantID() => participantID;
+    public bool IsPracticeMode() => isPracticeMode;
 
     public bool IsComponentActiveForCondition(string componentName)
     {
+        if (currentCondition == Condition.PRACTICE)
+            return false;
+
         switch (currentCondition)
         {
             case Condition.CTRL:

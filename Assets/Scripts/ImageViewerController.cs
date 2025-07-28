@@ -127,24 +127,6 @@ public class ImageViewerController : MonoBehaviour
         }
     }
 
-    // Public method for ExperimentManager to set pairs
-    public void SetImageQuestionPairs(List<ImageQuestionPair> pairs)
-    {
-        // Clear existing pairs
-        ClearExistingPairs();
-
-        // Set new pairs
-        imageQuestionPairs = pairs ?? new List<ImageQuestionPair>();
-        currentPairIndex = 0;
-
-        Debug.Log($"[ImageViewerController] Set {imageQuestionPairs.Count} image-question pairs");
-
-        // Update counter to show correct total
-        if (imageCounter != null && imageQuestionPairs.Count > 0)
-        {
-            imageCounter.text = $"1 / {imageQuestionPairs.Count}";
-        }
-    }
 
     private void ClearExistingPairs()
     {
@@ -180,7 +162,7 @@ public class ImageViewerController : MonoBehaviour
 
         // Show study UI
         displayImage.gameObject.SetActive(true);
-        imageCounter.gameObject.SetActive(true);
+        // imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
 
         // Initialize HUD components - check both if they exist AND if they should be active for current condition
@@ -222,6 +204,8 @@ public class ImageViewerController : MonoBehaviour
         if (questionManager != null)
         {
             questionManager.enabled = true;
+            bool practice = ExperimentManager.Instance?.IsPracticeMode() ?? false;
+            questionManager.SetPracticeMode(practice);
             questionManager.InitializeWithPairs(imageQuestionPairs, currentPairIndex);
         }
 
@@ -302,52 +286,6 @@ public class ImageViewerController : MonoBehaviour
         Debug.Log($"[ImageViewerController] Loaded {imageQuestionPairs.Count} image-question pairs from {loadedMetadata.Count} metadata files");
     }
 
-    private void ShuffleList<T>(List<T> list)
-    {
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            int randomIndex = Random.Range(0, i + 1);
-            T temp = list[i];
-            list[i] = list[randomIndex];
-            list[randomIndex] = temp;
-        }
-    }
-
-    private void DisplayCurrentImage()
-    {
-        if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count) return;
-
-        var currentPair = imageQuestionPairs[currentPairIndex];
-        displayImage.texture = currentPair.texture;
-        imageCounter.text = $"{currentPairIndex + 1} / {imageQuestionPairs.Count}";
-
-        if (dataLogger != null && dataLogger.trackingManager != null)
-        {
-            dataLogger.trackingManager.StartTrackingForImage(currentPairIndex);
-        }
-    }
-
-    public void NextImage()
-    {
-        if (imageQuestionPairs.Count == 0) return;
-
-        currentPairIndex++;
-        if (currentPairIndex >= imageQuestionPairs.Count)
-        {
-            EndStudy();
-            return;
-        }
-
-        DisplayCurrentImage();
-    }
-
-    public void PreviousImage()
-    {
-        if (imageQuestionPairs.Count == 0) return;
-        currentPairIndex = (currentPairIndex - 1 + imageQuestionPairs.Count) % imageQuestionPairs.Count;
-        DisplayCurrentImage();
-    }
-
     private void EndStudy()
     {
         // Stop tracking and save data
@@ -393,6 +331,83 @@ public class ImageViewerController : MonoBehaviour
         }
     }
 
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            T temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
+    }
+
+    private void DisplayCurrentImage()
+    {
+        if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count) return;
+
+        var currentPair = imageQuestionPairs[currentPairIndex];
+        displayImage.texture = currentPair.texture;
+        // imageCounter.text = $"{currentPairIndex + 1} / {imageQuestionPairs.Count}";
+
+        if (dataLogger != null && dataLogger.trackingManager != null)
+        {
+            dataLogger.trackingManager.StartTrackingForImage(currentPairIndex);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Disable input actions
+        if (leftTriggerAction != null)
+            leftTriggerAction.action.Disable();
+        if (rightTriggerAction != null)
+            rightTriggerAction.action.Disable();
+
+        // Clean up textures
+        ClearExistingPairs();
+    }
+
+    public void SetImageQuestionPairs(List<ImageQuestionPair> pairs)
+    {
+        // Clear existing pairs
+        ClearExistingPairs();
+
+        // Set new pairs
+        imageQuestionPairs = pairs ?? new List<ImageQuestionPair>();
+        currentPairIndex = 0;
+
+        Debug.Log($"[ImageViewerController] Set {imageQuestionPairs.Count} image-question pairs");
+
+        // Update counter to show correct total
+        // if (imageCounter != null && imageQuestionPairs.Count > 0)
+        // {
+        //     imageCounter.text = $"1 / {imageQuestionPairs.Count}";
+        // }
+    }
+
+    public void NextImage()
+    {
+        if (imageQuestionPairs.Count == 0) return;
+
+        currentPairIndex++;
+        if (currentPairIndex >= imageQuestionPairs.Count)
+        {
+            EndStudy();
+            return;
+        }
+
+        DisplayCurrentImage();
+    }
+
+    public void PreviousImage()
+    {
+        if (imageQuestionPairs.Count == 0) return;
+        currentPairIndex = (currentPairIndex - 1 + imageQuestionPairs.Count) % imageQuestionPairs.Count;
+        DisplayCurrentImage();
+    }
+
+
     public string GetCurrentImageName()
     {
         if (imageQuestionPairs.Count == 0 || currentPairIndex >= imageQuestionPairs.Count)
@@ -429,15 +444,4 @@ public class ImageViewerController : MonoBehaviour
         return !IsOpeningPanelActive() && !IsEndingPanelActive();
     }
 
-    private void OnDestroy()
-    {
-        // Disable input actions
-        if (leftTriggerAction != null)
-            leftTriggerAction.action.Disable();
-        if (rightTriggerAction != null)
-            rightTriggerAction.action.Disable();
-
-        // Clean up textures
-        ClearExistingPairs();
-    }
 }

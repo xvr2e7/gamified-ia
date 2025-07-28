@@ -1,0 +1,61 @@
+{
+  "file": "habitat_vs_class_bar.png",
+  "encoding": "BAR",
+  "feature": "habitat",
+  "categories": [
+    "grasses",
+    "leaves",
+    "meadows",
+    "paths",
+    "urban",
+    "waste"
+  ],
+  "matrix": {
+    "edible": [
+      1408,
+      240,
+      256,
+      136,
+      96,
+      192
+    ],
+    "poisonous": [
+      740,
+      592,
+      36,
+      1008,
+      272,
+      0
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which habitat has the most edible mushrooms?",
+      "answer": "grasses",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of mushrooms in grasses habitat are poisonous?",
+      "answer": 34.5,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which habitat has the lowest poisonous-to-edible ratio?",
+      "answer": "waste",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of poisonous mushrooms across all habitat categories?",
+      "answer": 8.9,
+      "panel": "slider"
+    }
+  ]
+}

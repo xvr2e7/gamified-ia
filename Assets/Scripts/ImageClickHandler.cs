@@ -23,7 +23,7 @@ public class ImageClickHandler : MonoBehaviour
     private RawImage rawImage;
     private bool triggerWasPressed = false;
     private float activationTime = 0f;
-    private const float STARTUP_DELAY = 0.5f; // Half second delay after activation
+    private const float STARTUP_DELAY = 0.5f;
 
     void Start()
     {
@@ -50,29 +50,23 @@ public class ImageClickHandler : MonoBehaviour
 
     void OnEnable()
     {
-        // Record when this component became active
         activationTime = Time.time;
-        triggerWasPressed = true; // Assume trigger is pressed on enable to prevent immediate action
+        triggerWasPressed = true;
     }
 
     void Update()
     {
-        // Check if we should process input
         if (imageViewer == null || !gameObject.activeInHierarchy)
             return;
 
-        // Don't process input for a short time after activation
         if (Time.time - activationTime < STARTUP_DELAY)
             return;
 
-        // Read trigger values
         float leftTrigger = leftTriggerAction != null ? leftTriggerAction.action.ReadValue<float>() : 0f;
         float rightTrigger = rightTriggerAction != null ? rightTriggerAction.action.ReadValue<float>() : 0f;
 
-        // Check if either trigger is pressed (threshold of 0.5)
         bool triggerPressed = leftTrigger > 0.5f || rightTrigger > 0.5f;
 
-        // Detect trigger press (not hold) - only fires once per press
         if (triggerPressed && !triggerWasPressed)
         {
             HandleClick();
@@ -83,6 +77,33 @@ public class ImageClickHandler : MonoBehaviour
 
     private void HandleClick()
     {
+        // Practice mode check for feedback state
+        bool isPracticeMode = ExperimentManager.Instance != null && ExperimentManager.Instance.IsPracticeMode();
+        if (isPracticeMode && questionManager != null && questionManager.IsShowingFeedback())
+        {
+            // Hide feedback and continue
+            questionManager.HideFeedbackAndContinue();
+
+            bool isLast = imageViewer.GetCurrentImageIndex() >= imageViewer.GetLoadedImagesCount() - 1;
+
+            // Advance image
+            if (imageViewer != null)
+            {
+                imageViewer.NextImage();
+                if (dataLogger != null && !isLast)
+                {
+                    dataLogger.StartImageTimer();
+                }
+            }
+
+            // Advance question
+            if (!isLast && questionManager != null)
+            {
+                questionManager.LoadNextQuestion();
+            }
+            return;
+        }
+
         // Get input value based on question type
         float sliderValue = -1f;
         string selectedOption = "";
@@ -125,6 +146,23 @@ public class ImageClickHandler : MonoBehaviour
                 taskType,
                 correctAnswer
             );
+        }
+
+        // Practice mode: show feedback instead of advancing
+        if (isPracticeMode && questionManager != null)
+        {
+            string userAnswer = "";
+            if (panelType == "slider")
+            {
+                userAnswer = Mathf.RoundToInt(sliderValue).ToString();
+            }
+            else if (panelType == "button" && !string.IsNullOrEmpty(selectedOption))
+            {
+                userAnswer = selectedOption;
+            }
+
+            questionManager.ShowFeedback(userAnswer);
+            return;
         }
 
         // Check if answer is correct and handle streak/XP

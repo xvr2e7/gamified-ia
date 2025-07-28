@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3444415038830188606
+--- !u!1 &6634166027145426001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7012495277426264633}
-  - component: {fileID: 6321921196030043764}
+  - component: {fileID: 2143872191284691272}
+  - component: {fileID: 7191433469142069175}
   m_Layer: 0
-  m_Name: TrackingManager
+  m_Name: ExperimentManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7012495277426264633
+--- !u!4 &2143872191284691272
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3444415038830188606}
+  m_GameObject: {fileID: 6634166027145426001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,19 +32,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6321921196030043764
+--- !u!114 &7191433469142069175
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3444415038830188606}
+  m_GameObject: {fileID: 6634166027145426001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b878ef451f3b491c9347b381db2b08b, type: 3}
+  m_Script: {fileID: 11500000, guid: 874e252dc17d14d5a8044d497be44a01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xrOrigin: {fileID: 0}
-  mainCamera: {fileID: 0}
-  trackingRate: 90
-  forceSimulatorMode: 0
+  flatStimulusCanvas: {fileID: 0}
+  HUD: {fileID: 0}
+  environment: {fileID: 0}
+  xpContainer: {fileID: 0}
+  streakMultiplier: {fileID: 0}
+  timeContainer: {fileID: 0}
+  imageViewer: {fileID: 0}
+  questionManager: {fileID: 0}

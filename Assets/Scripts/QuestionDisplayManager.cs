@@ -11,6 +11,10 @@ public class QuestionDisplayManager : MonoBehaviour
     [Header("Panels")]
     public GameObject sliderPanel;
     public GameObject buttonPanel;
+    public GameObject feedbackPanel;
+
+    [Header("Feedback UI")]
+    public TextMeshProUGUI feedbackText;
 
     [Header("Prefabs")]
     public Slider sliderPrefab;
@@ -24,11 +28,26 @@ public class QuestionDisplayManager : MonoBehaviour
     private Slider instantiatedSlider;
     private TextMeshProUGUI valueText;
 
+    private bool isPracticeMode = false;
+    private bool showingFeedback = false;
+
     void Awake()
     {
         // Hide panels before anything renders
         sliderPanel.SetActive(false);
         buttonPanel.SetActive(false);
+        if (feedbackPanel != null) feedbackPanel.SetActive(false);
+    }
+
+    public void SetPracticeMode(bool enabled)
+    {
+        isPracticeMode = enabled;
+        showingFeedback = false;
+    }
+
+    public bool IsShowingFeedback()
+    {
+        return showingFeedback;
     }
 
     public void InitializeWithPairs(List<ImageViewerController.ImageQuestionPair> pairs, int startIndex)
@@ -83,7 +102,7 @@ public class QuestionDisplayManager : MonoBehaviour
         // Show the right panel based on the panel type
         if (currentTask.panel == "slider")
             SetupSlider();
-        else if (currentTask.panel == "button")
+        else if (currentTask.panel == "button" || currentTask.panel == "buttons")
             SetupCarousel();
         else
             Debug.LogError($"Unknown panel type: {currentTask.panel}");
@@ -91,9 +110,10 @@ public class QuestionDisplayManager : MonoBehaviour
 
     void SetupSlider()
     {
-        // Activate slider panel; deactivate carousel
+        // Activate slider panel; deactivate others
         sliderPanel.SetActive(true);
         buttonPanel.SetActive(false);
+        if (feedbackPanel != null) feedbackPanel.SetActive(false);
 
         // Instantiate and parent the slider
         instantiatedSlider = Instantiate(sliderPrefab, sliderPanel.transform);
@@ -119,17 +139,24 @@ public class QuestionDisplayManager : MonoBehaviour
 
     void SetupCarousel()
     {
-        // Activate carousel; deactivate slider
+        // Activate carousel; deactivate others
         buttonPanel.SetActive(true);
         sliderPanel.SetActive(false);
+        if (feedbackPanel != null) feedbackPanel.SetActive(false);
 
         // Use categories array for button options
         string[] opts = currentQuestionData.categories;
 
         // Initialize the existing GridControlledButtons on buttonPanel
         var carousel = buttonPanel.GetComponent<GridControlledButtons>();
-
-        carousel.Initialize(opts, buttonPrefab);
+        if (carousel != null)
+        {
+            carousel.Initialize(opts, buttonPrefab);
+        }
+        else
+        {
+            Debug.LogError("GridControlledButtons component not found on buttonPanel");
+        }
     }
 
     void ClearInstantiatedElements()
@@ -143,7 +170,7 @@ public class QuestionDisplayManager : MonoBehaviour
         }
 
         // Clear carousel buttons
-        var carousel = buttonPanel.GetComponent<GridControlledButtons>();
+        var carousel = buttonPanel?.GetComponent<GridControlledButtons>();
         if (carousel != null)
             carousel.Clear();
     }
@@ -152,6 +179,52 @@ public class QuestionDisplayManager : MonoBehaviour
     {
         if (valueText != null)
             valueText.text = $"{val:0}";
+    }
+
+    public void ShowFeedback(string userAnswer)
+    {
+        if (!isPracticeMode || feedbackPanel == null || feedbackText == null)
+            return;
+
+        showingFeedback = true;
+
+        // Hide option panels
+        sliderPanel.SetActive(false);
+        buttonPanel.SetActive(false);
+
+        // Show feedback panel
+        feedbackPanel.SetActive(true);
+
+        // Check if answer is correct
+        string correctAnswer = GetCorrectAnswer();
+
+        string displayAnswer = correctAnswer;
+        if (currentTask?.panel == "slider")
+        {
+            if (float.TryParse(correctAnswer, out float floatAnswer))
+            {
+                displayAnswer = Mathf.RoundToInt(floatAnswer).ToString();
+            }
+        }
+
+        bool isCorrect = userAnswer.Equals(correctAnswer, System.StringComparison.OrdinalIgnoreCase);
+
+        if (isCorrect)
+        {
+            feedbackText.text = "Correct!";
+            feedbackText.color = Color.green;
+        }
+        else
+        {
+            feedbackText.text = $"Incorrect. The correct answer is: {displayAnswer}";
+            feedbackText.color = Color.red;
+        }
+    }
+
+    public void HideFeedbackAndContinue()
+    {
+        showingFeedback = false;
+        if (feedbackPanel != null) feedbackPanel.SetActive(false);
     }
 
     public void LoadNextQuestion()
@@ -175,13 +248,13 @@ public class QuestionDisplayManager : MonoBehaviour
 
     public int GetSelectedOptionIndex()
     {
-        var c = buttonPanel.GetComponent<GridControlledButtons>();
+        var c = buttonPanel?.GetComponent<GridControlledButtons>();
         return c != null ? c.CurrentIndex : -1;
     }
 
     public string GetSelectedOptionText()
     {
-        var c = buttonPanel.GetComponent<GridControlledButtons>();
+        var c = buttonPanel?.GetComponent<GridControlledButtons>();
         return c != null ? c.CurrentText : "";
     }
 

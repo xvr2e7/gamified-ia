@@ -184,6 +184,10 @@ PrefabInstance:
       value: ImageViewer
       objectReference: {fileID: 0}
     - target: {fileID: 2948471078329796678, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
+      propertyPath: m_text
+      value: Whenever you're ready!
+      objectReference: {fileID: 0}
+    - target: {fileID: 2948471078329796678, guid: 538c6a9ab98694df39eea2ff0daee7c0, type: 3}
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: a0257ef08f390446b8964478549f5409, type: 2}
@@ -307,7 +311,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
       propertyPath: changeSpeed
-      value: 1.5
+      value: 0.11
       objectReference: {fileID: 0}
     - target: {fileID: 6959965677839653480, guid: 799c640e859374eb19b4fc05074ba8a5, type: 3}
       propertyPath: maxSpeedMultiplier

@@ -64,15 +64,18 @@ public class SetupManager : MonoBehaviour
         // Save participant ID and reset condition counter
         PlayerPrefs.SetInt("ParticipantID", selectedParticipantID);
         PlayerPrefs.SetInt("CurrentCondition", 0);
+
+        // Set flag to start in practice mode
+        PlayerPrefs.SetInt("StartPractice", 1);
         PlayerPrefs.Save();
 
-        // Load experiment scene (Pilot Study for now)
+        // Load pilot scene (ExperimentManager will handle practice mode)
         StartCoroutine(LoadSceneWithProperLighting());
     }
 
     IEnumerator LoadSceneWithProperLighting()
     {
-        // Load the scene
+        // Load the pilot scene
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Pilot", LoadSceneMode.Single);
 
         // Wait until the scene is fully loaded
