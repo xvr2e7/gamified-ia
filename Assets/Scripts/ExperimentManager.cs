@@ -180,7 +180,7 @@ public class ExperimentManager : MonoBehaviour
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 if (environment != null) environment.SetActive(true);
                 if (HUD != null) HUD.SetActive(true);
-                if (xpContainer != null) xpContainer.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(false);
                 if (streakMultiplier != null) streakMultiplier.SetActive(false);
                 if (timeContainer != null) timeContainer.SetActive(true);
                 break;
@@ -440,7 +440,7 @@ public class ExperimentManager : MonoBehaviour
                 return false;
 
             case Condition.TIME:
-                return componentName == "XPManager" || componentName == "QuestionTimer";
+                return componentName == "QuestionTimer";
 
             case Condition.FEED:
                 return componentName == "XPManager";
