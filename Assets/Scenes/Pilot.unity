@@ -528,14 +528,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 663839188348915172, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -190
-      objectReference: {fileID: 0}
-    - target: {fileID: 982546551302082832, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 480
-      objectReference: {fileID: 0}
     - target: {fileID: 1773366280271006027, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -624,30 +616,18 @@ PrefabInstance:
       propertyPath: timerContainer
       value: 
       objectReference: {fileID: 1065769655}
-    - target: {fileID: 3464770735791929032, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -190
-      objectReference: {fileID: 0}
     - target: {fileID: 3620752070129720133, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
       propertyPath: m_Name
       value: FlatStimulusCanvas
       objectReference: {fileID: 0}
-    - target: {fileID: 5105584490805310545, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
+    - target: {fileID: 3965994716682336869, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: m_text
+      value: Be as quickly and accurately as possible
       objectReference: {fileID: 0}
-    - target: {fileID: 7062907957623344838, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -190
+    - target: {fileID: 8581797636110924956, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 280
       objectReference: {fileID: 0}
-    - target: {fileID: 8687018907506144345, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: feedbackText
-      value: 
-      objectReference: {fileID: 1921521750}
-    - target: {fileID: 8687018907506144345, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-      propertyPath: feedbackPanel
-      value: 
-      objectReference: {fileID: 1539505207}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -799,11 +779,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4259530871980339969, guid: ee7e04f43383a47afb85529c5ae3a346, type: 3}
   m_PrefabInstance: {fileID: 1472487880}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1539505207 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 917600046270913448, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-  m_PrefabInstance: {fileID: 1422304785}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1589864646
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -918,17 +893,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d3968e418b611494392d0c4cbe10f260, type: 3}
---- !u!114 &1921521750 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 596071123832132940, guid: e81c4ecd3f7074e32a0b0307a9b4cb1d, type: 3}
-  m_PrefabInstance: {fileID: 1422304785}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &2099214706
 PrefabInstance:
   m_ObjectHideFlags: 0

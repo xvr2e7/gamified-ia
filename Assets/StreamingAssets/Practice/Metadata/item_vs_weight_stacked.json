@@ -1,0 +1,61 @@
+{
+  "file": "item_vs_weight_stacked.png",
+  "encoding": "STACK",
+  "feature": "item",
+  "categories": [
+    "Pen",
+    "Pencil",
+    "Notebook",
+    "Eraser",
+    "Marker",
+    "Stapler"
+  ],
+  "matrix": {
+    "Heavy": [
+      8,
+      1,
+      2,
+      3,
+      1,
+      4
+    ],
+    "Light": [
+      5,
+      4,
+      0,
+      6,
+      9,
+      2
+    ]
+  },
+  "tasks": [
+    {
+      "type": "low",
+      "family": "max",
+      "question": "Which item has the most heavy stationery?",
+      "answer": "Pen",
+      "panel": "button"
+    },
+    {
+      "type": "low",
+      "family": "value",
+      "question": "What percentage of pen items are light?",
+      "answer": 11.1,
+      "panel": "slider"
+    },
+    {
+      "type": "high",
+      "family": "ratio",
+      "question": "Which item has the lowest light-to-heavy ratio?",
+      "answer": "Notebook",
+      "panel": "button"
+    },
+    {
+      "type": "high",
+      "family": "average",
+      "question": "What is the average percentage of light stationery across all item categories?",
+      "answer": 9.6,
+      "panel": "slider"
+    }
+  ]
+}

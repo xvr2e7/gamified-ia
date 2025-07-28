@@ -216,7 +216,7 @@ public class ExperimentManager : MonoBehaviour
         // For practice mode, only load the specific file
         if (isPracticeMode)
         {
-            string practiceFile = Path.Combine(metaPath, "Metadata", "Habitat_vs_class_bar.json");
+            string practiceFile = Path.Combine(metaPath, "Metadata", "Item_vs_weight_stacked.json");
             if (File.Exists(practiceFile))
             {
                 LoadTrialsFromFile(practiceFile, allTrials);
