@@ -165,9 +165,11 @@ public class ImageViewerController : MonoBehaviour
         // imageCounter.gameObject.SetActive(true);
         questionPanel.SetActive(true);
 
-        // Initialize HUD components - check both if they exist AND if they should be active for current condition
+        // NOW activate HUD elements for the current condition
         if (ExperimentManager.Instance != null)
         {
+            ExperimentManager.Instance.ActivateHUDForStudy();
+
             // Only initialize XPManager if it should be active for current condition
             if (ExperimentManager.Instance.IsComponentActiveForCondition("XPManager"))
             {
@@ -310,6 +312,12 @@ public class ImageViewerController : MonoBehaviour
             StreakMultiplier.Instance.ResetStreak();
         }
 
+        // Deactivate HUD through ExperimentManager
+        if (ExperimentManager.Instance != null)
+        {
+            ExperimentManager.Instance.DeactivateHUDForStudy();
+        }
+
         // Hide study UI
         displayImage.gameObject.SetActive(false);
         imageCounter.gameObject.SetActive(false);
@@ -324,7 +332,7 @@ public class ImageViewerController : MonoBehaviour
 
         if (ambienceSource != null) ambienceSource.Stop();
 
-        // Notify ExperimentManager if it exists
+        // Notify experiment manager
         if (ExperimentManager.Instance != null)
         {
             ExperimentManager.Instance.OnBlockComplete();

@@ -152,67 +152,36 @@ public class ExperimentManager : MonoBehaviour
 
     private void ApplyConditionSettings(Condition condition)
     {
+        // Always show the canvas and environment
         switch (condition)
         {
             case Condition.PRACTICE:
-                // Practice mode - similar to CTRL but with feedback enabled
-                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                if (environment != null) environment.SetActive(false);
-                if (HUD != null) HUD.SetActive(false);
-
-                // Enable feedback mode in question manager
-                if (questionManager != null)
-                    questionManager.SetPracticeMode(true);
-                break;
-
             case Condition.CTRL:
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 if (environment != null) environment.SetActive(false);
-                if (HUD != null) HUD.SetActive(false);
                 break;
 
-            case Condition.BASE:
+            default:
                 if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
                 if (environment != null) environment.SetActive(true);
-                if (HUD != null) HUD.SetActive(false);
                 break;
+        }
 
-            case Condition.BAFE:
-                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                if (environment != null) environment.SetActive(true);
-                if (HUD != null) HUD.SetActive(false);
+        // HUD parent is inactive for now
+        if (HUD != null) HUD.SetActive(false);
 
-                // Enable simple feedback mode
-                if (questionManager != null)
-                    questionManager.SetSimpleFeedbackMode(true);
-                break;
+        // Ensure all HUD children are inactive
+        if (xpContainer != null) xpContainer.SetActive(false);
+        if (streakMultiplier != null) streakMultiplier.SetActive(false);
+        if (timeContainer != null) timeContainer.SetActive(false);
 
-            case Condition.TIME:
-                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                if (environment != null) environment.SetActive(true);
-                if (HUD != null) HUD.SetActive(true);
-                if (xpContainer != null) xpContainer.SetActive(false);
-                if (streakMultiplier != null) streakMultiplier.SetActive(false);
-                if (timeContainer != null) timeContainer.SetActive(true);
-                break;
-
-            case Condition.FEED:
-                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                if (environment != null) environment.SetActive(true);
-                if (HUD != null) HUD.SetActive(true);
-                if (xpContainer != null) xpContainer.SetActive(true);
-                if (streakMultiplier != null) streakMultiplier.SetActive(false);
-                if (timeContainer != null) timeContainer.SetActive(false);
-                break;
-
-            case Condition.FULL:
-                if (flatStimulusCanvas != null) flatStimulusCanvas.SetActive(true);
-                if (environment != null) environment.SetActive(true);
-                if (HUD != null) HUD.SetActive(true);
-                if (xpContainer != null) xpContainer.SetActive(true);
-                if (streakMultiplier != null) streakMultiplier.SetActive(true);
-                if (timeContainer != null) timeContainer.SetActive(true);
-                break;
+        // Handle question manager modes
+        if (questionManager != null)
+        {
+            if (condition == Condition.PRACTICE)
+                questionManager.SetPracticeMode(true);
+            else if (condition == Condition.BAFE)
+                questionManager.SetSimpleFeedbackMode(true);
         }
     }
 
@@ -403,6 +372,50 @@ public class ExperimentManager : MonoBehaviour
         SceneManager.LoadScene("Setup");
     }
 
+    // called by ImageViewerController when study actually starts
+    public void ActivateHUDForStudy()
+    {
+        switch (currentCondition)
+        {
+            case Condition.PRACTICE:
+            case Condition.CTRL:
+            case Condition.BASE:
+            case Condition.BAFE:
+                // No HUD for these conditions
+                if (HUD != null) HUD.SetActive(false);
+                break;
+
+            case Condition.TIME:
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(false);
+                if (streakMultiplier != null) streakMultiplier.SetActive(false);
+                if (timeContainer != null) timeContainer.SetActive(true);
+                break;
+
+            case Condition.FEED:
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(true);
+                if (streakMultiplier != null) streakMultiplier.SetActive(false);
+                if (timeContainer != null) timeContainer.SetActive(false);
+                break;
+
+            case Condition.FULL:
+                if (HUD != null) HUD.SetActive(true);
+                if (xpContainer != null) xpContainer.SetActive(true);
+                if (streakMultiplier != null) streakMultiplier.SetActive(true);
+                if (timeContainer != null) timeContainer.SetActive(true);
+                break;
+        }
+    }
+
+    // called by ImageViewerController when study ends
+    public void DeactivateHUDForStudy()
+    {
+        if (HUD != null) HUD.SetActive(false);
+        if (xpContainer != null) xpContainer.SetActive(false);
+        if (streakMultiplier != null) streakMultiplier.SetActive(false);
+        if (timeContainer != null) timeContainer.SetActive(false);
+    }
     public void OnBlockComplete()
     {
         if (isPracticeMode)
