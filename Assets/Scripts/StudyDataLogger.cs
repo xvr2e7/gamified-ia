@@ -9,7 +9,6 @@ public class StudyDataLogger : MonoBehaviour
 {
     private List<ImageStudyRecord> studyRecords = new List<ImageStudyRecord>();
     private float currentImageStartTime;
-    private float studyStartTime;
 
     [Header("Physics Tracking")]
     [SerializeField]
@@ -21,7 +20,6 @@ public class StudyDataLogger : MonoBehaviour
         {
             trackingManager = FindObjectOfType<PhysiologicalTrackingManager>();
         }
-        studyStartTime = Time.time;
     }
 
     public void StartImageTimer()
@@ -49,28 +47,6 @@ public class StudyDataLogger : MonoBehaviour
             return;
         }
 
-        // Get block number and condition
-        int blockNumber = GetBlockNumber();
-        string conditionName = GetConditionName();
-
-        // Create base filename with block number
-        string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        string baseFileName = $"Block{blockNumber}_{timestamp}";
-        string basePath = Application.persistentDataPath;
-
-        // Save three separate files
-        SaveSummaryFile(basePath, baseFileName, conditionName);
-        SavePerformanceFile(basePath, baseFileName);
-        SavePhysiologicalFile(basePath, baseFileName);
-
-        Debug.Log($"[StudyDataLogger] Study data saved with base name: {baseFileName}");
-    }
-
-    private void SaveSummaryFile(string basePath, string baseFileName, string conditionName)
-    {
-        string fileName = $"{baseFileName}_Summary.csv";
-        string filePath = Path.Combine(basePath, fileName);
-
         // Get final XP score
         int finalXP = 0;
         if (XPManager.Instance != null)
@@ -78,50 +54,40 @@ public class StudyDataLogger : MonoBehaviour
             finalXP = XPManager.Instance.GetCurrentXP();
         }
 
-        // Calculate total study time
-        float totalStudyTime = Time.time - studyStartTime;
+        string fileName = $"StudyData_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
+        string filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         StringBuilder csv = new StringBuilder();
-        csv.AppendLine("Metric,Value");
-        csv.AppendLine($"Condition,{conditionName}");
-        csv.AppendLine($"Block Number,{GetBlockNumber()}");
-        csv.AppendLine($"Participant ID,{PlayerPrefs.GetInt("ParticipantID", 1)}");
+
+        // --- Study Summary ---
+        csv.AppendLine("### Study Summary ###");
         csv.AppendLine($"Total Images Viewed,{studyRecords.Count}");
         csv.AppendLine($"Total Time (seconds),{studyRecords.Sum(r => r.timeSpent):F2}");
-        csv.AppendLine($"Total Study Time (seconds),{totalStudyTime:F2}");
-        csv.AppendLine($"Average Time Per Image (seconds),{(studyRecords.Count > 0 ? studyRecords.Average(r => r.timeSpent) : 0):F2}");
         csv.AppendLine($"Final XP Score,{finalXP}");
-        csv.AppendLine($"Timestamp,{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        csv.AppendLine();
 
-        File.WriteAllText(filePath, csv.ToString());
-        Debug.Log($"[StudyDataLogger] Summary saved to: {filePath}");
-    }
-
-    private void SavePerformanceFile(string basePath, string baseFileName)
-    {
-        string fileName = $"{baseFileName}_Performance.csv";
-        string filePath = Path.Combine(basePath, fileName);
-
-        StringBuilder csv = new StringBuilder();
+        // --- Performance Metrics ---
+        csv.AppendLine("### Performance Metrics ###");
         csv.AppendLine("ImageIndex,ImageName,TimeSpent(seconds),SliderValue(%),SelectedOption,TaskType,CorrectAnswer,IsCorrect,StreakMultiplier,Timestamp");
 
         foreach (var record in studyRecords)
         {
             string sliderValueStr = record.sliderValue == -1 ? "" : $"{record.sliderValue:F0}";
 
-            // Determine if answer was correct
+            // Determine if answer was correct based on whether it's a slider or button question
             bool isCorrect = false;
 
-            // Check if it's a slider question
+            // Check if it's a slider question (has a valid slider value)
             if (record.sliderValue >= 0 && !string.IsNullOrEmpty(record.correctAnswer))
             {
                 float correctValue;
                 if (float.TryParse(record.correctAnswer, out correctValue))
                 {
+                    // Use 5.0f tolerance for slider questions
                     isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 5.0f;
                 }
             }
-            // Check if it's a button question
+            // Check if it's a button question (has a selected option)
             else if (!string.IsNullOrEmpty(record.selectedOption) && !string.IsNullOrEmpty(record.correctAnswer))
             {
                 isCorrect = record.selectedOption == record.correctAnswer;
@@ -130,59 +96,22 @@ public class StudyDataLogger : MonoBehaviour
             csv.AppendLine($"{record.imageIndex},{record.imageName},{record.timeSpent:F2},{sliderValueStr},{record.selectedOption},{record.taskType},{record.correctAnswer},{isCorrect},{record.streakMultiplier},{record.timestamp}");
         }
 
+        // --- Physiological Tracking ---
+        if (trackingManager != null)
+        {
+            var allTracking = trackingManager.GetAllTrackingData();
+            if (allTracking.Count > 0)
+            {
+                csv.AppendLine();
+                csv.AppendLine("### Physiological Tracking ###");
+                WriteTrackingHeader(csv);
+                WriteTrackingData(csv, allTracking);
+            }
+        }
+
+        // Write out and finish
         File.WriteAllText(filePath, csv.ToString());
-        Debug.Log($"[StudyDataLogger] Performance data saved to: {filePath}");
-    }
-
-    private void SavePhysiologicalFile(string basePath, string baseFileName)
-    {
-        if (trackingManager == null)
-        {
-            Debug.LogWarning("[StudyDataLogger] No tracking manager available for physiological data");
-            return;
-        }
-
-        var allTracking = trackingManager.GetAllTrackingData();
-        if (allTracking.Count == 0)
-        {
-            Debug.LogWarning("[StudyDataLogger] No physiological tracking data to save");
-            return;
-        }
-
-        string fileName = $"{baseFileName}_Physiological.csv";
-        string filePath = Path.Combine(basePath, fileName);
-
-        StringBuilder csv = new StringBuilder();
-        WriteTrackingHeader(csv);
-        WriteTrackingData(csv, allTracking);
-
-        File.WriteAllText(filePath, csv.ToString());
-        Debug.Log($"[StudyDataLogger] Physiological data saved to: {filePath}");
-    }
-
-    private int GetBlockNumber()
-    {
-        // Check if in practice mode
-        if (ExperimentManager.Instance != null && ExperimentManager.Instance.IsPracticeMode())
-        {
-            return 0; // Practice block is 0
-        }
-
-        // Get current condition index (0-based) and add 1 for block number
-        int conditionIndex = PlayerPrefs.GetInt("CurrentCondition", 0);
-        return conditionIndex + 1;
-    }
-
-    private string GetConditionName()
-    {
-        if (ExperimentManager.Instance != null)
-        {
-            var condition = ExperimentManager.Instance.GetCurrentCondition();
-            return condition.ToString();
-        }
-
-        // Fallback if ExperimentManager not available
-        return "UNKNOWN";
+        Debug.Log($"[StudyDataLogger] Study data saved to: {filePath}");
     }
 
     void WriteTrackingHeader(StringBuilder csv)
