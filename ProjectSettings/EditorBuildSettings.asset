@@ -15,5 +15,6 @@ EditorBuildSettings:
     path: Assets/Scenes/Break.unity
     guid: 9b7949ba1eedc490382a484f5b92cb23
   m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 57a355e0c28d44f86b1a7575f85053e3, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 922512b65b1274d368163bafb1be2590, type: 2}

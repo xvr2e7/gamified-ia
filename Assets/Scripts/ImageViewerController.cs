@@ -127,7 +127,6 @@ public class ImageViewerController : MonoBehaviour
         }
     }
 
-
     private void ClearExistingPairs()
     {
         if (imageQuestionPairs != null)
@@ -414,7 +413,6 @@ public class ImageViewerController : MonoBehaviour
         currentPairIndex = (currentPairIndex - 1 + imageQuestionPairs.Count) % imageQuestionPairs.Count;
         DisplayCurrentImage();
     }
-
 
     public string GetCurrentImageName()
     {

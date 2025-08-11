@@ -148,8 +148,7 @@ public class QuestionDisplayManager : MonoBehaviour
         // Use categories array for button options
         string[] opts = currentQuestionData.categories;
 
-        // Initialize the existing GridControlledButtons on buttonPanel
-        var carousel = buttonPanel.GetComponent<GridControlledButtons>();
+        var carousel = buttonPanel.GetComponent<ButtonsControl>();
         if (carousel != null)
         {
             carousel.Initialize(opts, buttonPrefab);
@@ -171,7 +170,7 @@ public class QuestionDisplayManager : MonoBehaviour
         }
 
         // Clear carousel buttons
-        var carousel = buttonPanel?.GetComponent<GridControlledButtons>();
+        var carousel = buttonPanel?.GetComponent<ButtonsControl>();
         if (carousel != null)
             carousel.Clear();
     }
@@ -335,13 +334,13 @@ public class QuestionDisplayManager : MonoBehaviour
 
     public int GetSelectedOptionIndex()
     {
-        var c = buttonPanel?.GetComponent<GridControlledButtons>();
+        var c = buttonPanel?.GetComponent<ButtonsControl>();
         return c != null ? c.CurrentIndex : -1;
     }
 
     public string GetSelectedOptionText()
     {
-        var c = buttonPanel?.GetComponent<GridControlledButtons>();
+        var c = buttonPanel?.GetComponent<ButtonsControl>();
         return c != null ? c.CurrentText : "";
     }
 

@@ -325,9 +325,12 @@ MonoBehaviour:
   questionPanel: {fileID: 0}
   sliderPanel: {fileID: 0}
   buttonPanel: {fileID: 0}
+  hudGameObject: {fileID: 0}
+  timerContainer: {fileID: 0}
   normalPanelColor: {r: 1, g: 1, b: 1, a: 0.392}
-  hoverPanelColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.5}
+  ambienceClip: {fileID: 8300000, guid: abe97d6a181c844948b3f11bbce3c677, type: 3}
   imageFolderPath: Data/SampleImages
+  metadataFolderPath: Metadata
   leftTriggerAction: {fileID: 0}
   rightTriggerAction: {fileID: 0}
   questionManager: {fileID: 0}
