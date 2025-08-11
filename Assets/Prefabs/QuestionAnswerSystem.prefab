@@ -131,11 +131,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 993687670062374739}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3500369c8b4a54c6dbb15eec01580817, type: 3}
+  m_Script: {fileID: 11500000, guid: aea7c23ed39654716ab9f5613f3d6ec0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftGripAction: {fileID: -3742484312079769484, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  rightGripAction: {fileID: 15759602096507913, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  leftTrackpadClick: {fileID: -3957933205665366019, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  leftTrackpadPosition: {fileID: 2508676925434791467, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadClick: {fileID: 1284096317326697278, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadPosition: {fileID: 5690977195398398385, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  horizontalThreshold: 0.3
 --- !u!1 &1537526061824989001
 GameObject:
   m_ObjectHideFlags: 0
@@ -283,7 +286,7 @@ GameObject:
   - component: {fileID: 3841043187370292789}
   - component: {fileID: 5196362997073243217}
   - component: {fileID: 529848658443662}
-  - component: {fileID: 2317802301152290521}
+  - component: {fileID: 6485120406881066289}
   m_Layer: 5
   m_Name: FeedbackPanel
   m_TagString: Untagged
@@ -393,7 +396,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
---- !u!114 &2317802301152290521
+--- !u!114 &6485120406881066289
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -402,11 +405,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2854373267974810393}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3500369c8b4a54c6dbb15eec01580817, type: 3}
+  m_Script: {fileID: 11500000, guid: aea7c23ed39654716ab9f5613f3d6ec0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftGripAction: {fileID: -3742484312079769484, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  rightGripAction: {fileID: 15759602096507913, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  leftTrackpadClick: {fileID: -3957933205665366019, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  leftTrackpadPosition: {fileID: 2508676925434791467, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadClick: {fileID: 1284096317326697278, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadPosition: {fileID: 5690977195398398385, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  horizontalThreshold: 0.3
 --- !u!1 &5958741638627421599
 GameObject:
   m_ObjectHideFlags: 0
@@ -727,37 +733,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7925652785502078176}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68cf0aec6fd444161bf030828ab3d3da, type: 3}
+  m_Script: {fileID: 11500000, guid: 4dbdbe22db5b84d129d2e5ad80b6a1ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  changeSpeed: 2
-  accelerationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 2
-      value: 3
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  maxSpeedMultiplier: 3
-  leftGripActionReference: {fileID: -3742484312079769484, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  rightGripActionReference: {fileID: 15759602096507913, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  changeSpeedPerSecond: 0.2
+  leftTrackpadClick: {fileID: -3957933205665366019, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  leftTrackpadPosition: {fileID: 2508676925434791467, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadClick: {fileID: 1284096317326697278, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  rightTrackpadPosition: {fileID: 5690977195398398385, guid: 202361c2733a14cdb916d78f3f2c068a, type: 3}
+  horizontalThreshold: 0.3
 --- !u!1 &8143035087621049172
 GameObject:
   m_ObjectHideFlags: 0

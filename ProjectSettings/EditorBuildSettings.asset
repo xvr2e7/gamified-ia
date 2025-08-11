@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Setup.unity
     guid: 5512826fd858647de8ef26c6e6d7767e
   - enabled: 1
-    path: Assets/Scenes/Pilot.unity
+    path: Assets/Scenes/Study.unity
     guid: e312ea55a0baf4d40b6e3f527c1bd3c6
   - enabled: 1
     path: Assets/Scenes/Break.unity
