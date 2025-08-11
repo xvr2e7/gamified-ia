@@ -101,6 +101,6 @@ public class BreakManager : MonoBehaviour
     void ContinueExperiment()
     {
         // Return to experiment scene
-        SceneManager.LoadScene("Pilot");
+        SceneManager.LoadScene("Study");
     }
 }

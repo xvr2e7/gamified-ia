@@ -70,14 +70,14 @@ public class SetupManager : MonoBehaviour
         PlayerPrefs.SetInt("StartPractice", 1);
         PlayerPrefs.Save();
 
-        // Load pilot scene (ExperimentManager will handle practice mode)
+        // Load study scene (ExperimentManager will handle practice mode)
         StartCoroutine(LoadSceneWithProperLighting());
     }
 
     IEnumerator LoadSceneWithProperLighting()
     {
-        // Load the pilot scene
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Pilot", LoadSceneMode.Single);
+        // Load the study scene
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Study", LoadSceneMode.Single);
 
         // Wait until the scene is fully loaded
         while (!asyncLoad.isDone)

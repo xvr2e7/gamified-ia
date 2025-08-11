@@ -92,13 +92,13 @@ public class ExperimentManager : MonoBehaviour
 
     void Start()
     {
-        if (SceneManager.GetActiveScene().name == "Pilot")
+        if (SceneManager.GetActiveScene().name == "Study")
             BeginCondition();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "Pilot")
+        if (scene.name == "Study")
             BeginCondition();
     }
 
@@ -429,7 +429,7 @@ public class ExperimentManager : MonoBehaviour
             PlayerPrefs.Save();
 
             // Reload scene to start first condition
-            SceneManager.LoadScene("Pilot");
+            SceneManager.LoadScene("Study");
             return;
         }
 
