@@ -5,9 +5,7 @@ using UnityEngine.InputSystem;
 public class SliderControl : MonoBehaviour
 {
     [Header("Speed Settings")]
-    [SerializeField] private float changeSpeed = 1.0f;
-    [SerializeField] private AnimationCurve accelerationCurve = AnimationCurve.Linear(0f, 1f, 2f, 3f);
-    [SerializeField] private float maxSpeedMultiplier = 3f;
+    [SerializeField] private float changeSpeedPerSecond = 0.2f;
 
     [Header("Trackpad Input Actions")]
     [SerializeField] private InputActionReference leftTrackpadClick;
@@ -16,23 +14,17 @@ public class SliderControl : MonoBehaviour
     [SerializeField] private InputActionReference rightTrackpadPosition;
 
     [Header("Trackpad Settings")]
-    [SerializeField] private float horizontalThreshold = 0.3f; // How far left/right to register
+    [SerializeField] private float horizontalThreshold = 0.3f;
 
     private bool leftSidePressed = false;
     private bool rightSidePressed = false;
-    private float holdTime = 0f;
 
     void Start()
     {
-        // Enable all input actions
-        if (leftTrackpadClick != null)
-            leftTrackpadClick.action.Enable();
-        if (leftTrackpadPosition != null)
-            leftTrackpadPosition.action.Enable();
-        if (rightTrackpadClick != null)
-            rightTrackpadClick.action.Enable();
-        if (rightTrackpadPosition != null)
-            rightTrackpadPosition.action.Enable();
+        if (leftTrackpadClick != null) leftTrackpadClick.action.Enable();
+        if (leftTrackpadPosition != null) leftTrackpadPosition.action.Enable();
+        if (rightTrackpadClick != null) rightTrackpadClick.action.Enable();
+        if (rightTrackpadPosition != null) rightTrackpadPosition.action.Enable();
     }
 
     void Update()
@@ -59,50 +51,30 @@ public class SliderControl : MonoBehaviour
 
         if (leftClicked)
         {
-            if (leftPos.x < -horizontalThreshold)
-                currentLeftSide = true;
-            else if (leftPos.x > horizontalThreshold)
-                currentRightSide = true;
+            if (leftPos.x < -horizontalThreshold) currentLeftSide = true;
+            else if (leftPos.x > horizontalThreshold) currentRightSide = true;
         }
 
         if (rightClicked)
         {
-            if (rightPos.x < -horizontalThreshold)
-                currentLeftSide = true;
-            else if (rightPos.x > horizontalThreshold)
-                currentRightSide = true;
+            if (rightPos.x < -horizontalThreshold) currentLeftSide = true;
+            else if (rightPos.x > horizontalThreshold) currentRightSide = true;
         }
 
         leftSidePressed = currentLeftSide;
         rightSidePressed = currentRightSide;
 
-        // Calculate change direction and update hold time
         float changeDirection = 0f;
-        if (leftSidePressed && !rightSidePressed)
-        {
-            changeDirection = -1f; // Decrease slider
-            holdTime += Time.deltaTime;
-        }
-        else if (rightSidePressed && !leftSidePressed)
-        {
-            changeDirection = 1f; // Increase slider
-            holdTime += Time.deltaTime;
-        }
-        else
-        {
-            holdTime = 0f; // Reset hold time when no press or both sides
-        }
+        if (leftSidePressed && !rightSidePressed) changeDirection = -1f; // Decrease
+        else if (rightSidePressed && !leftSidePressed) changeDirection = 1f; // Increase
 
         if (changeDirection != 0f)
         {
-            // Calculate speed multiplier based on hold time
-            float speedMultiplier = accelerationCurve.Evaluate(holdTime);
-            speedMultiplier = Mathf.Clamp(speedMultiplier, 1f, maxSpeedMultiplier);
-
-            float changeAmount = changeDirection * changeSpeed * speedMultiplier * Time.deltaTime;
+            float range = activeSlider.maxValue - activeSlider.minValue;
+            float changeAmount = changeDirection * changeSpeedPerSecond * Time.deltaTime * range;
 
             activeSlider.value = Mathf.Clamp(
-                activeSlider.value + changeAmount * (activeSlider.maxValue - activeSlider.minValue),
+                activeSlider.value + changeAmount,
                 activeSlider.minValue,
                 activeSlider.maxValue
             );
@@ -111,14 +83,9 @@ public class SliderControl : MonoBehaviour
 
     void OnDestroy()
     {
-        // Disable all input actions
-        if (leftTrackpadClick != null)
-            leftTrackpadClick.action.Disable();
-        if (leftTrackpadPosition != null)
-            leftTrackpadPosition.action.Disable();
-        if (rightTrackpadClick != null)
-            rightTrackpadClick.action.Disable();
-        if (rightTrackpadPosition != null)
-            rightTrackpadPosition.action.Disable();
+        if (leftTrackpadClick != null) leftTrackpadClick.action.Disable();
+        if (leftTrackpadPosition != null) leftTrackpadPosition.action.Disable();
+        if (rightTrackpadClick != null) rightTrackpadClick.action.Disable();
+        if (rightTrackpadPosition != null) rightTrackpadPosition.action.Disable();
     }
 }
