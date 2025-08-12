@@ -39,15 +39,15 @@
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in abundant population are poisonous?",
-      "answer": 0.0,
+      "question": "What percentage of mushrooms with solitary population are poisonous?",
+      "answer": 8.0,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which population has the lowest poisonous-to-edible ratio?",
-      "answer": "abundant",
+      "question": "Which population has the lowest edible-to-poisonous ratio?",
+      "answer": "several",
       "panel": "button"
     },
     {

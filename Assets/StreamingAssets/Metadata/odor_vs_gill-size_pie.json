@@ -32,22 +32,22 @@
     {
       "type": "low",
       "family": "max",
-      "question": "Which odor has the most broad mushrooms?",
-      "answer": "almond",
+      "question": "Which odor has the most narrow mushrooms?",
+      "answer": "fishy",
       "panel": "button"
     },
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in almond odor are narrow?",
-      "answer": 12.0,
+      "question": "What percentage of mushrooms with pungent odor are narrow?",
+      "answer": 10.7,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which odor has the lowest narrow-to-broad ratio?",
-      "answer": "almond",
+      "question": "Which odor has the lowest broad-to-narrow ratio?",
+      "answer": "fishy",
       "panel": "button"
     },
     {

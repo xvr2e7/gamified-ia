@@ -32,22 +32,22 @@
     {
       "type": "low",
       "family": "max",
-      "question": "Which habitat has the most enlarging mushrooms?",
+      "question": "Which habitat has the most tapering mushrooms?",
       "answer": "grasses",
       "panel": "button"
     },
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in grasses habitat are tapering?",
-      "answer": 42.5,
+      "question": "What percentage of mushrooms in urban habitat are enlarging?",
+      "answer": 4.5,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which habitat has the lowest tapering-to-enlarging ratio?",
-      "answer": "meadows",
+      "question": "Which habitat has the lowest enlarging-to-tapering ratio?",
+      "answer": "leaves",
       "panel": "button"
     },
     {

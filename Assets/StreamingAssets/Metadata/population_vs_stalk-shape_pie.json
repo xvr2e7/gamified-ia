@@ -39,15 +39,15 @@
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in abundant population are tapering?",
-      "answer": 100.0,
+      "question": "What percentage of mushrooms with clustered population are enlarging?",
+      "answer": 4.2,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which population has the lowest tapering-to-enlarging ratio?",
-      "answer": "clustered",
+      "question": "Which population has the lowest enlarging-to-tapering ratio?",
+      "answer": "abundant",
       "panel": "button"
     },
     {

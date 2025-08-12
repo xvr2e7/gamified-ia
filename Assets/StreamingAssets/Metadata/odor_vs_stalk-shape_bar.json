@@ -32,22 +32,22 @@
     {
       "type": "low",
       "family": "max",
-      "question": "Which odor has the most enlarging mushrooms?",
-      "answer": "almond",
+      "question": "Which odor has the most tapering mushrooms?",
+      "answer": "fishy",
       "panel": "button"
     },
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in almond odor are tapering?",
-      "answer": 12.0,
+      "question": "What percentage of mushrooms in almond odor are enlarging?",
+      "answer": 14.6,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which odor has the lowest tapering-to-enlarging ratio?",
-      "answer": "creosote",
+      "question": "Which odor has the lowest enlarging-to-tapering ratio?",
+      "answer": "fishy",
       "panel": "button"
     },
     {

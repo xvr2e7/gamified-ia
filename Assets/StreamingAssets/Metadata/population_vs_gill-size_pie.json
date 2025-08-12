@@ -39,15 +39,15 @@
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in abundant population are narrow?",
-      "answer": 0.0,
+      "question": "What percentage of mushrooms with scattered population are broad?",
+      "answer": 12.6,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which population has the lowest narrow-to-broad ratio?",
-      "answer": "abundant",
+      "question": "Which population has the lowest broad-to-narrow ratio?",
+      "answer": "several",
       "panel": "button"
     },
     {

@@ -39,15 +39,15 @@
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in almond odor are poisonous?",
-      "answer": 0.0,
+      "question": "What percentage of mushrooms with creosote odor are poisonous?",
+      "answer": 8.0,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which odor has the lowest poisonous-to-edible ratio?",
-      "answer": "almond",
+      "question": "Which odor has the lowest edible-to-poisonous ratio?",
+      "answer": "fishy",
       "panel": "button"
     },
     {

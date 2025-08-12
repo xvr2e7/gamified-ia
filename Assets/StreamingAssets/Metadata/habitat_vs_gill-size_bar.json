@@ -32,22 +32,22 @@
     {
       "type": "low",
       "family": "max",
-      "question": "Which habitat has the most broad mushrooms?",
-      "answer": "grasses",
+      "question": "Which habitat has the most narrow mushrooms?",
+      "answer": "leaves",
       "panel": "button"
     },
     {
       "type": "low",
       "family": "value",
-      "question": "What percentage of mushrooms in grasses habitat are narrow?",
-      "answer": 6.0,
+      "question": "What percentage of mushrooms in meadows habitat are broad?",
+      "answer": 5.8,
       "panel": "slider"
     },
     {
       "type": "high",
       "family": "ratio",
-      "question": "Which habitat has the lowest narrow-to-broad ratio?",
-      "answer": "meadows",
+      "question": "Which habitat has the lowest broad-to-narrow ratio?",
+      "answer": "leaves",
       "panel": "button"
     },
     {
