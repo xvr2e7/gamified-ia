@@ -36,7 +36,6 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     // Decoupling: latest snapshots (main thread) -> queue (background 90 Hz)
     private readonly object latestLock = new object();
     private PhysiologicalTrackingData latestHead;
-    private PhysiologicalTrackingData latestEye;
 
     private Thread samplerThread;
     private volatile bool running;
@@ -161,18 +160,14 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     {
         float now = Time.unscaledTime;
 
-        // HEAD
-        Vector3 headPos; Quaternion headRot;
+        // Get HEAD pose and raycast
+        Vector3 headPos;
+        Quaternion headRot;
         GetHeadPose(out headPos, out headRot);
         string headHit = RaycastName(headPos, headRot * Vector3.forward, headRayLength);
 
-        var head = new PhysiologicalTrackingData(
+        var combined = new PhysiologicalTrackingData(
             now, "Head", headPos, headRot * Vector3.forward, headHit, true
-        );
-
-        // EYES
-        var eyes = new PhysiologicalTrackingData(
-            now, "Eyes", Vector3.zero, Vector3.zero, "None", false
         );
 
         if (!useSimulator && eyeTrackingAvailable)
@@ -186,47 +181,30 @@ public class PhysiologicalTrackingManager : MonoBehaviour
                 {
                     var leftGaze = gazeData[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
                     var rightGaze = gazeData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
-                    bool validGaze = leftGaze.isValid && rightGaze.isValid;
 
-                    PopulateEyeGazeData(ref eyes.leftEye, leftGaze);
-                    PopulateEyeGazeData(ref eyes.rightEye, rightGaze);
+                    PopulateEyeGazeData(ref combined.leftEye, leftGaze);
+                    PopulateEyeGazeData(ref combined.rightEye, rightGaze);
 
                     // Pupil
                     XrSingleEyePupilDataHTC[] pupilData;
                     XR_HTC_eye_tracker.Interop.GetEyePupilData(out pupilData);
                     if (pupilData != null && pupilData.Length >= 2)
                     {
-                        PopulatePupil(ref eyes.leftEye, pupilData[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC]);
-                        PopulatePupil(ref eyes.rightEye, pupilData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC]);
+                        var leftPupil = pupilData[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                        var rightPupil = pupilData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+                        PopulatePupil(ref combined.leftEye, leftPupil);
+                        PopulatePupil(ref combined.rightEye, rightPupil);
                     }
 
                     // Geometry
-                    XrSingleEyeGeometricDataHTC[] geomData;
-                    XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out geomData);
-                    if (geomData != null && geomData.Length >= 2)
+                    XrSingleEyeGeometricDataHTC[] geometryData;
+                    XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out geometryData);
+                    if (geometryData != null && geometryData.Length >= 2)
                     {
-                        PopulateGeometry(ref eyes.leftEye, geomData[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC]);
-                        PopulateGeometry(ref eyes.rightEye, geomData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC]);
-                    }
-
-                    eyes.isValid = validGaze;
-
-                    if (validGaze && mainCamera != null)
-                    {
-                        // Combined gaze origin/direction in WORLD space
-                        Vector3 leftLocal = leftGaze.gazePose.position.ToUnityVector();
-                        Vector3 rightLocal = rightGaze.gazePose.position.ToUnityVector();
-                        Vector3 avgLocalOrigin = (leftLocal + rightLocal) * 0.5f;
-                        Vector3 gazeOrigin = mainCamera.transform.TransformPoint(avgLocalOrigin);
-
-                        Quaternion leftQuatWs = mainCamera.transform.rotation * leftGaze.gazePose.orientation.ToUnityQuaternion();
-                        Quaternion rightQuatWs = mainCamera.transform.rotation * rightGaze.gazePose.orientation.ToUnityQuaternion();
-                        Quaternion gazeRot = Quaternion.Slerp(leftQuatWs, rightQuatWs, 0.5f);
-                        Vector3 gazeDir = gazeRot * Vector3.forward;
-
-                        eyes.globalPosition = gazeOrigin;
-                        eyes.forwardVector = gazeDir;
-                        eyes.hitObjectName = RaycastName(gazeOrigin, gazeDir, gazeRayLength);
+                        var leftGeometry = geometryData[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                        var rightGeometry = geometryData[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+                        PopulateGeometry(ref combined.leftEye, leftGeometry);
+                        PopulateGeometry(ref combined.rightEye, rightGeometry);
                     }
                 }
             }
@@ -236,11 +214,10 @@ public class PhysiologicalTrackingManager : MonoBehaviour
             }
         }
 
-        // Publish latest snapshots for the sampler thread
+        // Store only ONE snapshot
         lock (latestLock)
         {
-            latestHead = head;
-            latestEye = eyes;
+            latestHead = combined;
         }
 
         // Drain sampled records into current image list
@@ -323,29 +300,21 @@ public class PhysiologicalTrackingManager : MonoBehaviour
             if (wait > 1.0) Thread.Sleep((int)(wait - 0.5));
             while (samplerClock.Elapsed.TotalMilliseconds < nextTickMs) { /* sub-ms spin */ }
 
-            // Copy snapshots
-            PhysiologicalTrackingData headSnap = null;
-            PhysiologicalTrackingData eyeSnap = null;
+            // Copy single combined snapshot
+            PhysiologicalTrackingData snapshot = null;
             lock (latestLock)
             {
-                if (latestHead != null) headSnap = Clone(latestHead);
-                if (latestEye != null) eyeSnap = Clone(latestEye);
+                if (latestHead != null) snapshot = Clone(latestHead);
             }
 
             // Compute thread-safe timestamp (seconds since startup)
             float ts = (float)(samplerBaseSeconds + samplerClock.Elapsed.TotalSeconds);
 
-            if (headSnap != null)
+            if (snapshot != null)
             {
-                headSnap.timestamp = ts;
-                headSnap.trackingSource = "Head@Logger";
-                outQueue.Enqueue(headSnap);
-            }
-            if (eyeSnap != null)
-            {
-                eyeSnap.timestamp = ts;
-                eyeSnap.trackingSource = "Eyes@Logger";
-                outQueue.Enqueue(eyeSnap);
+                snapshot.timestamp = ts;
+                snapshot.trackingSource = "Head@90Hz";
+                outQueue.Enqueue(snapshot);
             }
 
             nextTickMs += periodMs;
