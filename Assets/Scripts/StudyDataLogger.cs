@@ -219,6 +219,13 @@ public class StudyDataLogger : MonoBehaviour
             "RightEye_GeometryValid", "RightEye_Openness", "RightEye_Squeeze", "RightEye_Wide"
         };
 
+        headers.AddRange(new[]
+        {
+            "Drift_RawDeg", "Drift_ResidualDeg",
+            "Drift_OffsetX", "Drift_OffsetY", "Drift_OffsetZ", "Drift_OffsetW",
+            "Drift_Label"
+        });
+
         csv.AppendLine(string.Join(",", headers));
     }
 
@@ -302,6 +309,16 @@ public class StudyDataLogger : MonoBehaviour
                     rightEye.eyeOpenness.ToString("F4"),
                     rightEye.eyeSqueeze.ToString("F4"),
                     rightEye.eyeWide.ToString("F4")
+                });
+
+                // Drift info
+                var off = DriftCalibration.Offset;
+                values.AddRange(new string[]
+                {
+                    DriftCalibration.LastRawDeg.ToString("F2"),
+                    DriftCalibration.LastResidualDeg.ToString("F2"),
+                    off.x.ToString("F6"), off.y.ToString("F6"), off.z.ToString("F6"), off.w.ToString("F6"),
+                    DriftCalibration.LastLabel
                 });
 
                 csv.AppendLine(string.Join(",", values));

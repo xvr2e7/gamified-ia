@@ -160,21 +160,18 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     {
         float now = Time.unscaledTime;
 
-        // Get HEAD pose and raycast
         Vector3 headPos;
         Quaternion headRot;
         GetHeadPose(out headPos, out headRot);
-        string headHit = RaycastName(headPos, headRot * Vector3.forward, headRayLength);
 
         var combined = new PhysiologicalTrackingData(
-            now, "Head", headPos, headRot * Vector3.forward, headHit, true
+            now, "Head", headPos, headRot * Vector3.forward, "None", true
         );
 
         if (!useSimulator && eyeTrackingAvailable)
         {
             try
             {
-                // Gaze
                 XrSingleEyeGazeDataHTC[] gazeData;
                 XR_HTC_eye_tracker.Interop.GetEyeGazeData(out gazeData);
                 if (gazeData != null && gazeData.Length >= 2)
@@ -185,7 +182,9 @@ public class PhysiologicalTrackingManager : MonoBehaviour
                     PopulateEyeGazeData(ref combined.leftEye, leftGaze);
                     PopulateEyeGazeData(ref combined.rightEye, rightGaze);
 
-                    // Pupil
+                    // Perform gaze-based raycast
+                    combined.hitObjectName = PerformGazeRaycast(combined.leftEye, combined.rightEye);
+
                     XrSingleEyePupilDataHTC[] pupilData;
                     XR_HTC_eye_tracker.Interop.GetEyePupilData(out pupilData);
                     if (pupilData != null && pupilData.Length >= 2)
@@ -196,7 +195,6 @@ public class PhysiologicalTrackingManager : MonoBehaviour
                         PopulatePupil(ref combined.rightEye, rightPupil);
                     }
 
-                    // Geometry
                     XrSingleEyeGeometricDataHTC[] geometryData;
                     XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out geometryData);
                     if (geometryData != null && geometryData.Length >= 2)
@@ -213,15 +211,56 @@ public class PhysiologicalTrackingManager : MonoBehaviour
                 Debug.LogError($"[Physio] Eye tracking read failed: {ex.Message}");
             }
         }
+        else
+        {
+            // Fallback to head raycast when eye tracking unavailable
+            combined.hitObjectName = RaycastName(headPos, headRot * Vector3.forward, headRayLength);
+        }
 
-        // Store only ONE snapshot
         lock (latestLock)
         {
             latestHead = combined;
         }
 
-        // Drain sampled records into current image list
         DrainQueueToImage();
+    }
+
+    private string PerformGazeRaycast(EyeData leftEye, EyeData rightEye)
+    {
+        Vector3 gazeOrigin = Vector3.zero;
+        Vector3 gazeDirection = Vector3.forward;
+        bool validGaze = false;
+
+        // Try combined gaze (average of both eyes)
+        if (leftEye.gazeValid && rightEye.gazeValid)
+        {
+            gazeOrigin = (leftEye.gazeWorldPosition + rightEye.gazeWorldPosition) * 0.5f;
+            Vector3 leftDir = leftEye.gazeWorldRotation * Vector3.forward;
+            Vector3 rightDir = rightEye.gazeWorldRotation * Vector3.forward;
+            gazeDirection = ((leftDir + rightDir) * 0.5f).normalized;
+            validGaze = true;
+        }
+        // Fallback to left eye only
+        else if (leftEye.gazeValid)
+        {
+            gazeOrigin = leftEye.gazeWorldPosition;
+            gazeDirection = leftEye.gazeWorldRotation * Vector3.forward;
+            validGaze = true;
+        }
+        // Fallback to right eye only
+        else if (rightEye.gazeValid)
+        {
+            gazeOrigin = rightEye.gazeWorldPosition;
+            gazeDirection = rightEye.gazeWorldRotation * Vector3.forward;
+            validGaze = true;
+        }
+
+        if (!validGaze)
+        {
+            return "None";
+        }
+
+        return RaycastName(gazeOrigin, gazeDirection, headRayLength);
     }
 
     private void GetHeadPose(out Vector3 pos, out Quaternion rot)
@@ -247,8 +286,15 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     private string RaycastName(Vector3 origin, Vector3 dir, float length)
     {
         if (dir.sqrMagnitude < 1e-8f) return "None";
+
         if (Physics.Raycast(origin, dir, out var hit, length, raycastMask, QueryTriggerInteraction.Ignore))
-            return hit.collider != null ? hit.collider.gameObject.name : "None";
+        {
+            if (hit.collider != null && hit.collider.gameObject != null)
+            {
+                return hit.collider.gameObject.name;
+            }
+        }
+
         return "None";
     }
 
@@ -328,13 +374,19 @@ public class PhysiologicalTrackingManager : MonoBehaviour
     private void PopulateEyeGazeData(ref EyeData eyeData, XrSingleEyeGazeDataHTC gazeData)
     {
         eyeData.gazeValid = gazeData.isValid;
-        if (gazeData.isValid && mainCamera != null)
-        {
-            eyeData.gazeLocalPosition = gazeData.gazePose.position.ToUnityVector();
-            eyeData.gazeLocalRotation = gazeData.gazePose.orientation.ToUnityQuaternion();
-            eyeData.gazeWorldPosition = mainCamera.transform.TransformPoint(eyeData.gazeLocalPosition);
-            eyeData.gazeWorldRotation = mainCamera.transform.rotation * eyeData.gazeLocalRotation;
-        }
+        if (!gazeData.isValid || mainCamera == null) return;
+
+        eyeData.gazeLocalPosition = gazeData.gazePose.position.ToUnityVector();
+        eyeData.gazeLocalRotation = gazeData.gazePose.orientation.ToUnityQuaternion();
+
+        var wPos = mainCamera.transform.TransformPoint(eyeData.gazeLocalPosition);
+        var wRot = mainCamera.transform.rotation * eyeData.gazeLocalRotation;
+
+        // drift-correct world rotation
+        wRot = DriftCalibration.Apply(wRot);
+
+        eyeData.gazeWorldPosition = wPos;
+        eyeData.gazeWorldRotation = wRot;
     }
 
     private void PopulatePupil(ref EyeData eyeData, XrSingleEyePupilDataHTC pupil)
