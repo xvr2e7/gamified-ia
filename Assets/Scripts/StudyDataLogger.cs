@@ -138,7 +138,6 @@ public class StudyDataLogger : MonoBehaviour
     {
         if (trackingManager == null)
         {
-            Debug.LogWarning("[StudyDataLogger] No tracking manager available for physiological data");
             return;
         }
 

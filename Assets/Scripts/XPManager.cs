@@ -4,7 +4,6 @@ using TMPro;
 public class XPManager : MonoBehaviour
 {
     [Header("XP Settings")]
-    [SerializeField] private int xpPerSecond = 1;
     [SerializeField] private int xpPerCorrectAnswer = 10;
 
     [Header("UI Reference")]
@@ -14,7 +13,6 @@ public class XPManager : MonoBehaviour
     [SerializeField] private MushroomCounter mushroomCounter;
 
     private int currentXP = 0;
-    private float timer = 0f;
     private bool isCountingXP = false;
 
     private static XPManager instance;
@@ -54,28 +52,9 @@ public class XPManager : MonoBehaviour
         UpdateXPDisplay();
     }
 
-    void Update()
-    {
-        // Only accumulate XP if counting is enabled
-        if (isCountingXP)
-        {
-            timer += Time.deltaTime;
-            if (timer >= 1f)
-            {
-                timer -= 1f;
-
-                // Apply streak multiplier to XP per second
-                float multiplier = StreakMultiplier.Instance != null ? StreakMultiplier.Instance.GetXPMultiplier() : 1f;
-                int multipliedXP = Mathf.RoundToInt(xpPerSecond * multiplier);
-                AddXP(multipliedXP);
-            }
-        }
-    }
-
     public void StartCounting()
     {
         isCountingXP = true;
-        timer = 0f; // Reset timer to ensure clean start
         currentXP = 0; // Reset XP for new study session
         UpdateXPDisplay();
 

@@ -157,7 +157,6 @@ public class StreakMultiplier : MonoBehaviour
         // Safety check
         if (!gameObject.activeInHierarchy)
         {
-            Debug.LogWarning("[StreakMultiplier] Don't play effect - GameObject is inactive");
             return;
         }
 

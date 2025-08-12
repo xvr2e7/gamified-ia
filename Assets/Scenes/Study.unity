@@ -434,6 +434,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: HUD
       objectReference: {fileID: 0}
+    - target: {fileID: 8567712127852699615, guid: 72aedd3d944da416ba8674c6316bdb19, type: 3}
+      propertyPath: urgentColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8567712127852699615, guid: 72aedd3d944da416ba8674c6316bdb19, type: 3}
+      propertyPath: warningColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8567712127852699615, guid: 72aedd3d944da416ba8674c6316bdb19, type: 3}
+      propertyPath: criticalColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8567712127852699615, guid: 72aedd3d944da416ba8674c6316bdb19, type: 3}
+      propertyPath: urgencyThreshold
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8567712127852699615, guid: 72aedd3d944da416ba8674c6316bdb19, type: 3}
+      propertyPath: questionTimeLimit
+      value: 30
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

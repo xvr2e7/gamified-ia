@@ -109,7 +109,6 @@ public class QuestionTimer : MonoBehaviour
         // Safety check
         if (!gameObject.activeInHierarchy)
         {
-            Debug.LogWarning("[QuestionTimer] Don't start timer - GameObject is inactive");
             return;
         }
 
@@ -229,7 +228,7 @@ public class QuestionTimer : MonoBehaviour
 
     private void EnterUrgencyMode()
     {
-        if (!gameObject.activeInHierarchy) return; // Safety check
+        if (!gameObject.activeInHierarchy) return;
 
         isInUrgencyMode = true;
 
