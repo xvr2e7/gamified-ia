@@ -237,6 +237,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 5894527933972305253, guid: 6687dae6ad62044b482f6c7b3ac4d643, type: 3}
+      propertyPath: fixationSphere
+      value: 
+      objectReference: {fileID: 657394343}
+    - target: {fileID: 5894527933972305253, guid: 6687dae6ad62044b482f6c7b3ac4d643, type: 3}
       propertyPath: validateButton
       value: 
       objectReference: {fileID: 269913326}
@@ -297,6 +301,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6687dae6ad62044b482f6c7b3ac4d643, type: 3}
+--- !u!1 &657394343 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8262487820761567109, guid: 6687dae6ad62044b482f6c7b3ac4d643, type: 3}
+  m_PrefabInstance: {fileID: 657394342}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &845300559
 PrefabInstance:
   m_ObjectHideFlags: 0
