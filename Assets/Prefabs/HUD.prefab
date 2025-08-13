@@ -224,6 +224,26 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: urgentColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: warningColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: criticalColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: urgencyThreshold
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8334659896231866469, guid: 87b1b86b868ff458484006c21593d38d, type: 3}
+      propertyPath: questionTimeLimit
+      value: 30
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
