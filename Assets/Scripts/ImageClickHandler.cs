@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(RawImage))]
 public class ImageClickHandler : MonoBehaviour
 {
-    [SerializeField] private float sliderError = 5f;
+    [SerializeField] private float sliderError = 10f;
 
     [Header("References")]
     public StudyDataLogger dataLogger;

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class QuestionDisplayManager : MonoBehaviour
 {
+    [SerializeField] private float sliderTolerance = 10f;
+
     [Header("UI References")]
     public TextMeshProUGUI questionText;
 
@@ -212,7 +214,7 @@ public class QuestionDisplayManager : MonoBehaviour
                 float.TryParse(correctAnswer, out float correctValue))
             {
                 // Check if within ±5 tolerance
-                isCorrect = Mathf.Abs(userValue - correctValue) <= 5f;
+                isCorrect = Mathf.Abs(userValue - correctValue) <= sliderTolerance;
 
                 // Format feedback text
                 int roundedCorrect = Mathf.RoundToInt(correctValue);
@@ -305,7 +307,7 @@ public class QuestionDisplayManager : MonoBehaviour
                 float.TryParse(correctAnswer, out float correctValue))
             {
                 // Check if within ±5 tolerance
-                isCorrect = Mathf.Abs(userValue - correctValue) <= 5f;
+                isCorrect = Mathf.Abs(userValue - correctValue) <= sliderTolerance;
             }
         }
         else

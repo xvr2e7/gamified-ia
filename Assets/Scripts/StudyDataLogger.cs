@@ -118,7 +118,7 @@ public class StudyDataLogger : MonoBehaviour
                 float correctValue;
                 if (float.TryParse(record.correctAnswer, out correctValue))
                 {
-                    isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 5.0f;
+                    isCorrect = Mathf.Abs(record.sliderValue - correctValue) < 10.0f;
                 }
             }
             // Check if it's a button question
